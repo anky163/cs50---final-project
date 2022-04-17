@@ -189,3 +189,32 @@ def information():
         return redirect("/")
 
     return render_template("information.html")
+
+
+
+# FIND FRIENDS
+
+@app.route("/send", methods=["GET", "POST"])
+@login_required
+def find():
+    if request.method == "POST":
+        friend_name = request.form.get("friend_name")
+        if not friend_name:
+            message = 'Name required!'
+            return render_template("send.html", message=message)
+        
+        birth = request.form.get("birth")
+        place = request.form.get("place")
+        number = request.form.get("number")
+        email = request.form.get("email")
+
+        names = []
+        name = db.execute("SELECT name FROM informations WHERE birth = ? AND place = ? AND number = ? AND email = ? AND name = ?", birth, place, number, email, friend_name)
+        if len(name) == 0:
+            message = "No resutl!"
+            return render_template("send.html", message=message)
+
+        names.append(name[0]['name'])
+        return render_template("send.html", names=names)    
+
+    return render_template("send.html")        
