@@ -73,19 +73,23 @@ def login():
     if request.method == "POST":
         username = request.form.get("username")
         if not username:
-            return apology("Must provide username", 403)
+            message = 'Username required!'
+            return render_template("login.html", message1=message)
         password = request.form.get("password")
         if not password:
-            return apology("Must provide password", 403)
+            message = 'Password required!'
+            return render_template("login.html", message2=message)
 
         # Check if user exists in database
         rows = db.execute("SELECT * FROM users WHERE username = ?", username)
         if len(rows) == 0:
-            return apology("User does not exist", 403)
+            message = 'User does not exist!'
+            return render_template("login.html", message1=message)
 
         # Check password
         if not check_password_hash(rows[0]['hash'], password):
-            return apology("Invalid username/password", 403)
+            message = 'Invalid password!'
+            return render_template("login.html", message2=message)
 
         # Remember which user has logged in
         session["user_id"] = rows[0]["id"]
@@ -125,21 +129,26 @@ def register():
     if request.method == "POST":
         username = request.form.get("username")
         if not username:
-            return apology("Must provide username", 400)
+            message = 'Must provide username!'
+            return render_template("register.html", message1=message)
         password = request.form.get("password")
         if not password:
-            return apology("Must provide password", 400)
+            message = 'Must provide password!'
+            return render_template("register.html", message2=message)
         confirmation = request.form.get("confirmation")
         if not confirmation:
-            return apology("Must confirm password", 400)
+            message = 'Must confirm password!'
+            return render_template("register.html", message3=message)
 
         # Check whether if username exists in database or not
         rows = db.execute("SELECT * FROM users WHERE username = ?", username)
         if len(rows) != 0:
-            return apology("User already exists", 400)
+            message = 'User already exists!'
+            return render_template("register.html", message1=message)
 
         if confirmation != password:
-            return apology("Password confirmation not correct", 400)
+            message = 'Password confirmation not correct!'
+            return render_template("register.html", message3=message)
 
         # hash password
         hash = generate_password_hash(password, method='pbkdf2:sha256', salt_length=8)
@@ -148,7 +157,8 @@ def register():
         try:
             db.execute("INSERT INTO users (username, hash) VALUES(?, ?)", username, hash)
         except:
-            return apology("User already exists", 400)
+            message = 'User already exists!'
+            return render_template("register.html", message1=message)
 
         # Redirect to homepage
         return render_template("login.html")
@@ -164,7 +174,8 @@ def information():
     if request.method == "POST":
         name = request.form.get("name")
         if not name:
-            return apology("Name required", 400)
+            message = 'Name required!'
+            return render_template("information.html", message=message)
         birth = request.form.get("birth")
         place = request.form.get("place")
         number = request.form.get("number")
@@ -174,9 +185,7 @@ def information():
         user_id = session['user_id']
         db.execute("INSERT INTO informations (user_id, name, birth, place, number, email) VALUES(?, ?, ?, ?, ?, ?)", user_id, name, birth, place, number, email)
 
-                     
         # Turn back to index
         return redirect("/")
-
 
     return render_template("information.html")
