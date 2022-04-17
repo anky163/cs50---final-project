@@ -1,0 +1,27 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Mail Box
+{% endblock %}
+
+{% block main %}
+
+    <table class="table">
+        <tr>
+            <th>Sender</th>
+            <th>Number</th>
+            <th>Email</th>
+            <th>Date</th>
+            <th>Mail</th>
+        </tr>
+        {% for in %}
+        <tr>
+            <td>{{ row.sender }}</td>
+            <td>{{ row.number }}</td>
+            <td>{{ row.email }}</td>
+            <td>{{ row.date }}</td>
+            <td>{{ row.mail }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+{% endblock %}

@@ -1,0 +1,51 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Send mail
+{% endblock %}
+
+{% block main %}
+    <form action="/send" method="post">
+        <div class="mb-3">
+            <input autofocus class="form-control mx-auto w-auto" id="friend_name" name="friend_name" placeholder="Friend's name" type="text">
+        </div>
+        <h6>{{ message }}</h6>
+        <div class="mb-3">
+            <input class="form-control mx-auto w-auto" id="birth" name="birth" placeholder="Birth" type="text">
+        </div>
+        <div class="mb-3">
+            <input class="form-control mx-auto w-auto" id="place" name="place" placeholder="Place" type="text">
+        </div>
+        <div class="mb-3">
+            <input class="form-control mx-auto w-auto" id="number" name="number" placeholder="Number" type="text">
+        </div>
+        <div class="mb-3">
+            <input class="form-control mx-auto w-auto" id="email" name="email" placeholder="Email" type="text">
+        </div>
+        <button class="btn btn-primary" type="submit">Find</button>
+        
+    </form>
+
+    {% for name in names %}
+    <form action="/mailBox" method="post">
+        <table class="table">
+            <tr>
+                <th>Receiver</th>
+                <th>Mail</th>
+            </tr>
+            <tr>
+                <td>{{ name }}</td>
+                <td>
+                    <div class="input-group" name="mail">
+                        <textarea class="form-control" aria-label="With textarea"></textarea>
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td></td>
+                <td><button type="submit">Send</button></td>
+            </tr>
+        </table>
+    </form>
+    {% endfor %}
+{% endblock %}
