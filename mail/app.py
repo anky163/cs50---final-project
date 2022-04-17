@@ -1,4 +1,4 @@
-# HELLO BABY
+# WHO'S YOUR DADDY ?!
 
 import os
 from click import confirmation_option
@@ -90,8 +90,12 @@ def login():
         # Remember which user has logged in
         session["user_id"] = rows[0]["id"]
 
-        # Redirect user to home page
-        return render_template("information.html")
+        user_id = session['user_id']
+        rows = db.execute("SELECT * FROM informations WHERE user_id = ?", user_id)
+        if len(rows) == 0:
+            # Redirect user to home page
+            return render_template("information.html")
+        return redirect("/")
 
     return render_template("login.html")
 
@@ -167,10 +171,9 @@ def information():
         email = request.form.get("email")
 
         # Update Informations
-        try:
-            db.execute("INSERT INTO informations (user_id, name, birth, place, number, email) VALUES(?, ?, ?, ?, ?, ?)", user_id, name, birth, place, number, email)
-        except:
-            return redirect("/")
+        user_id = session['user_id']
+        db.execute("INSERT INTO informations (user_id, name, birth, place, number, email) VALUES(?, ?, ?, ?, ?, ?)", user_id, name, birth, place, number, email)
+
                      
         # Turn back to index
         return redirect("/")
