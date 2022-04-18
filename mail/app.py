@@ -9,7 +9,7 @@ from flask_session import Session
 from tempfile import mkdtemp
 from werkzeug.security import check_password_hash, generate_password_hash
 
-from helpers import apology, login_required
+from helpers import login_required
 
 import datetime
 
@@ -28,11 +28,6 @@ Session(app)
 # Configure CS50 Library to use SQLite database
 db = SQL("sqlite:///mail.db")
 
-
-# GLOBAL VARIABLE FOR MAIL RECEIVER
-names = []
-receiver = ''
-email = ''
 
 @app.after_request
 def after_request(response):
@@ -125,7 +120,6 @@ def logout():
 
 
 
-
 # REGISTER
 
 @app.route("/register", methods=["GET", "POST"])
@@ -180,7 +174,7 @@ def information():
         name = request.form.get("name")
         if not name:
             message = 'Name required!'
-            return render_template("information.html", message=message)
+            return render_template("information.html", message1=message)
         birth = request.form.get("birth")
         place = request.form.get("place")
         number = request.form.get("number")
@@ -188,7 +182,11 @@ def information():
 
         # Update Informations
         user_id = session['user_id']
-        db.execute("INSERT INTO informations (user_id, name, birth, place, number, email) VALUES(?, ?, ?, ?, ?, ?)", user_id, name, birth, place, number, email)
+        try:
+            db.execute("INSERT INTO informations (user_id, name, birth, place, number, email) VALUES(?, ?, ?, ?, ?, ?)", user_id, name, birth, place, number, email)
+        except:
+            message = 'Invalid email (email already exists)!'
+            return render_template("information.html", message2=message)
 
         # Turn back to index
         return redirect("/")
@@ -197,57 +195,66 @@ def information():
 
 
 
-# FIND FRIENDS
+# FIND FRIEND AND SEND EMAIL
 
-@app.route("/find", methods=["GET", "POST"])
+@app.route("/send", methods=["GET", "POST"])
 @login_required
-def find():
+def send():
     if request.method == "POST":
 
         # Find friend
         receiver = request.form.get("receiver")
         if not receiver:
             message = 'Name required!'
-            return render_template("find.html", message1=message)
+            return render_template("send.html", message1=message)
+        user_names = db.execute("SELECT name FROM informations")
+        names = []
+        for row in user_names:
+            names.append(row['name'])
+        if receiver not in names:
+            message = 'Name does not exist!'
+            return render_template("send.html", message1=message)
         
         email = request.form.get("email")
         if not email:
             message = 'Email required!'
-            return render_template("find.html", message2=message)
+            return render_template("send.html", message2=message)
+        user_emails = db.execute("SELECT email FROM informations")
+        emails = []
+        for row in user_emails:
+            emails.append(row['email'])
+        if email not in emails:
+            message = 'Email does not exist!'
+            return render_template("send.html", message2=message)
 
-        row = db.execute("SELECT name, email FROM informations WHERE name = ? AND email = ?", receiver, email)
-        if len(row) == 0:
-            message = "No resutl!"
-            return render_template("find.html", message1=message)
+        # IF NAME AND EMAIL DON'T MATCH
+        receiver_emails = db.execute("SELECT email FROM informations WHERE name = ?", receiver)
+        emails = []
+        for row in receiver_emails:
+            emails.append(row['email'])
+        if email not in emails:
+            message = "Name and Email don't match!"
+            return render_template("send.html", message2=message)
 
-        value = {}
-        value['name'] = row[0]['name']
-        value['email'] = row[0]['email']
-        names = [value]
+        # IF user mails for themselves:
+        sender_id = session['user_id']
+        sender_email = db.execute("SELECT email FROM informations WHERE user_id = ?", sender_id)[0]['email']
+        if email == sender_email:
+            message = "You cannot mail for yourself!"
+            return render_template("send.html", message4=message)
 
-        return render_template("send.html", names=names) 
-
-    return render_template("find.html")        
-
-
-
-# SEND mail after found friend
-
-@app.route("/send", methods=["GET", "POST"])
-@login_required
-def send():
-    if request.method == "POST":
-        # Send mail after found friend
         mail = request.form.get("mail")
         if not mail:
-            message = "Your mail is empty"
-            return render_template("send.html", names=names, message3=message)
-        
-        sender_id = session['user_id']
-        receiver_id = db.execute("SELECT user_id FROM informations WHERE name = ? AND email = ?", receiver, email)
-        sender = db.execute("SELECT name FROM informations WHERE user_id = ?", sender_id)
-        receiver = db.execute("SELECT name FROM informations WHERE user_id = ?", receiver_id)
-        date = datetime.datetime.now()
-        db.execute("INSERT INTO mail_box (sender_id, receiver_id, sender, receiver, date, mail) VALUES (?, ?, ?, ?, ?, ?)", sender_id, receiver_id, sender, receiver, date, mail)
+            message = 'Your mail is empty!'
+            return render_template("send.html", message3=message)
 
-        return redirect("/find")
+        receiver_id = db.execute("SELECT user_id FROM informations WHERE email = ?", email)[0]['user_id']
+        sender = db.execute("SELECT name FROM informations WHERE user_id = ?", sender_id)[0]['name']
+        receiver = db.execute("SELECT name FROM informations WHERE user_id = ?", receiver_id)[0]['name']
+        date = datetime.datetime.now()
+
+        db.execute("INSERT INTO mail_box (sender_id, receiver_id, sender, receiver, date, mail) VALUES (?, ?, ?, ?, ?, ?)", sender_id, receiver_id, sender, receiver, date, mail)
+        return redirect("/send")
+
+    return render_template("send.html")
+

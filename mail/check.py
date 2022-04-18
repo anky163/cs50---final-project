@@ -1,3 +1,4 @@
+from multiprocessing.dummy import Namespace
 import os
 from click import confirmation_option
 
@@ -13,15 +14,5 @@ from helpers import apology, login_required
 # Configure CS50 Library to use SQLite database
 db = SQL("sqlite:///mail.db")
 
-row = db.execute("SELECT name, email FROM informations WHERE name = ? AND email = ?", 'ds nghia', 'nghia@gmail.com')
-
-names = []
-value = {}
-value['name'] = row[0]['name']
-value['email'] = row[0]['email']
-names = [value]
-
-print(names)
-for val in names:
-    print(val)
-
+sender = db.execute("SELECT name FROM informations WHERE user_id = ?", 20)[0]['name']
+print(sender)
