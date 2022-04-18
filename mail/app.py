@@ -258,3 +258,24 @@ def send():
 
     return render_template("send.html")
 
+
+# CHECK MAIL
+@app.route("/mail")
+@login_required
+def mail():
+
+    # Get informations from mail_box
+    user_id = session['user_id']
+    mails_received = db.execute("SELECT * FROM mail_box WHERE receiver_id = ?", user_id)
+
+    mails = []
+    
+    for row in mails_received:
+        value = {}
+        value['sender'] = row['sender']
+        value['email'] = db.execute("SELECT email FROM informations WHERE user_id = ?", row['sender_id'])[0]['email']
+        value['mail'] = row['mail']
+        value['date'] = row['date']
+        mails.append(value)
+    
+    return render_template("mail.html", mails=mails)

@@ -1,0 +1,25 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Your mails
+{% endblock %}
+
+{% block main %}
+    <h1>Your mails</h1>
+    <table class="table">
+        <tr>
+            <th scope="col">Sender</th>
+            <th scope="col">Email</th>
+            <th scope="col">Mail</th>
+            <th scope="col">Date</th>
+        </tr>
+        {% for value in mails %}
+        <tr>
+            <td>{{ value['sender'] }}</td>
+            <td>{{ value['email'] }}</td>
+            <td>{{ value['mail'] }}</td>
+            <td>{{ value['date'] }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+{% endblock %}
