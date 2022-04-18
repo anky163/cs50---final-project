@@ -171,6 +171,8 @@ def register():
 @login_required
 def information():
     if request.method == "POST":
+        user_id = session['user_id']
+
         name = request.form.get("name")
         if not name:
             message = 'Name required!'
@@ -180,8 +182,18 @@ def information():
         number = request.form.get("number")
         email = request.form.get("email")
 
+        #Check whether email exist in database or not
+        rows = db.execute("SELECT email FROM informations WHERE NOT user_id = ?", user_id)
+        emails = []
+        for row in rows:
+            emails.append(row['email'])
+        if email in emails:
+            message = 'Invalid email (email already exists)!'
+            return render_template("information.html", message2=message)
+        
+        db.execute("DELETE FROM informations WHERE user_id = ?", user_id)
+
         # Update Informations
-        user_id = session['user_id']
         try:
             db.execute("INSERT INTO informations (user_id, name, birth, place, number, email) VALUES(?, ?, ?, ?, ?, ?)", user_id, name, birth, place, number, email)
         except:
@@ -302,3 +314,11 @@ def history():
         histories.append(history)
 
     return render_template("history.html", histories=histories)
+
+
+
+# CHANGE INFORMATION
+@app.route("/change_information")
+@login_required
+def change_information():
+    return render_template("information.html")
