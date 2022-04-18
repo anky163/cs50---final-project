@@ -1,0 +1,51 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    History
+{% endblock %}
+
+{% block attribute %}
+    <style>
+        h5 {
+            font-weight:normal;
+        }
+
+        h6 {
+            color:darkgrey;
+        }
+
+        #head {
+            font-size: large;
+        }
+
+        #mail {
+            font-style: italic;
+        }
+    </style>
+{% endblock %}
+
+{% block main %}
+    <h1>Your history</h1>
+    <table class="table">
+        <tr id="head">
+            <th scope="col">Sender</th>
+            <th scope="col">Receiver</th>
+            <th scope="col">Mail</th>
+            <th scope="col">Date</th>
+        </tr>
+        {% for history in histories %}
+        <tr>
+            <td>
+                <h5>{{ history['sender'] }}</h5>
+                <h6>{{ history['sender_email'] }}</h6>
+            </td>
+            <td>
+                <h5>{{ history['receiver'] }}</h5>
+                <h6>{{ history['receiver_email'] }}</h6>
+            </td>
+            <td id="mail">{{ history['mail'] }}</td>
+            <td>{{ history['date'] }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+{% endblock %}

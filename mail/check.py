@@ -14,5 +14,5 @@ from helpers import login_required
 # Configure CS50 Library to use SQLite database
 db = SQL("sqlite:///mail.db")
 
-mails_received = db.execute("SELECT * FROM mail_box WHERE receiver_id = ?", 21)
-print(mails_received)
+rows = db.execute("SELECT * FROM mail_box WHERE sender_id = ? OR receiver_id = ?", 20, 20)
+print(rows)

@@ -279,3 +279,26 @@ def mail():
         mails.append(value)
     
     return render_template("mail.html", mails=mails)
+
+
+
+# CHECK HISTORY
+@app.route("/history")
+@login_required
+def history():
+    user_id = session['user_id']
+    rows = db.execute("SELECT * FROM mail_box WHERE sender_id = ? OR receiver_id = ?", user_id, user_id)
+    
+    histories = []
+
+    for row in rows:
+        history = {}
+        history['sender'] = row['sender']
+        history['sender_email'] = db.execute("SELECT email FROM informations WHERE user_id = ?", row['sender_id'])[0]['email']
+        history['receiver'] = row['receiver']
+        history['receiver_email'] = db.execute("SELECT email FROM informations WHERE user_id = ?", row['receiver_id'])[0]['email']
+        history['mail'] = row['mail']
+        history['date'] = row['date']
+        histories.append(history)
+
+    return render_template("history.html", histories=histories)
