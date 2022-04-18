@@ -1,0 +1,20 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Find
+{% endblock %}
+
+{% block main %}
+    <form action="/find" method="post">
+        <div class="mb-3">
+            <input autofocus class="form-control mx-auto w-auto" id="receiver" name="receiver" placeholder="Friend's name" type="text">
+        </div>
+        <h6>{{ message1 }}</h6>
+        <div class="mb-3">
+            <input class="form-control mx-auto w-auto" id="email" name="email" placeholder="Email" type="text">
+        </div>
+        <h6>{{ message2 }}</h6>
+        <button class="btn btn-primary" type="submit">Find</button>
+    </form>
+   
+{% endblock %}

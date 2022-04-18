@@ -11,6 +11,7 @@ from werkzeug.security import check_password_hash, generate_password_hash
 
 from helpers import apology, login_required
 
+import datetime
 
 # Configure application
 app = Flask(__name__)
@@ -28,6 +29,10 @@ Session(app)
 db = SQL("sqlite:///mail.db")
 
 
+# GLOBAL VARIABLE FOR MAIL RECEIVER
+names = []
+receiver = ''
+email = ''
 
 @app.after_request
 def after_request(response):
@@ -194,27 +199,55 @@ def information():
 
 # FIND FRIENDS
 
-@app.route("/send", methods=["GET", "POST"])
+@app.route("/find", methods=["GET", "POST"])
 @login_required
 def find():
     if request.method == "POST":
-        friend_name = request.form.get("friend_name")
-        if not friend_name:
+
+        # Find friend
+        receiver = request.form.get("receiver")
+        if not receiver:
             message = 'Name required!'
-            return render_template("send.html", message=message)
+            return render_template("find.html", message1=message)
         
-        birth = request.form.get("birth")
-        place = request.form.get("place")
-        number = request.form.get("number")
         email = request.form.get("email")
+        if not email:
+            message = 'Email required!'
+            return render_template("find.html", message2=message)
 
-        names = []
-        name = db.execute("SELECT name FROM informations WHERE birth = ? AND place = ? AND number = ? AND email = ? AND name = ?", birth, place, number, email, friend_name)
-        if len(name) == 0:
+        row = db.execute("SELECT name, email FROM informations WHERE name = ? AND email = ?", receiver, email)
+        if len(row) == 0:
             message = "No resutl!"
-            return render_template("send.html", message=message)
+            return render_template("find.html", message1=message)
 
-        names.append(name[0]['name'])
-        return render_template("send.html", names=names)    
+        value = {}
+        value['name'] = row[0]['name']
+        value['email'] = row[0]['email']
+        names = [value]
 
-    return render_template("send.html")        
+        return render_template("send.html", names=names) 
+
+    return render_template("find.html")        
+
+
+
+# SEND mail after found friend
+
+@app.route("/send", methods=["GET", "POST"])
+@login_required
+def send():
+    if request.method == "POST":
+        # Send mail after found friend
+        mail = request.form.get("mail")
+        if not mail:
+            message = "Your mail is empty"
+            return render_template("send.html", names=names, message3=message)
+        
+        sender_id = session['user_id']
+        receiver_id = db.execute("SELECT user_id FROM informations WHERE name = ? AND email = ?", receiver, email)
+        sender = db.execute("SELECT name FROM informations WHERE user_id = ?", sender_id)
+        receiver = db.execute("SELECT name FROM informations WHERE user_id = ?", receiver_id)
+        date = datetime.datetime.now()
+        db.execute("INSERT INTO mail_box (sender_id, receiver_id, sender, receiver, date, mail) VALUES (?, ?, ?, ?, ?, ?)", sender_id, receiver_id, sender, receiver, date, mail)
+
+        return redirect("/find")

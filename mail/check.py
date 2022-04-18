@@ -13,10 +13,15 @@ from helpers import apology, login_required
 # Configure CS50 Library to use SQLite database
 db = SQL("sqlite:///mail.db")
 
-friend_name = 'ds nghia'
-birth = ''
-place = ''
-number = ''
-email = ''
-name = db.execute("SELECT * FROM informations WHERE name = ?", friend_name)
-print(name)
+row = db.execute("SELECT name, email FROM informations WHERE name = ? AND email = ?", 'ds nghia', 'nghia@gmail.com')
+
+names = []
+value = {}
+value['name'] = row[0]['name']
+value['email'] = row[0]['email']
+names = [value]
+
+print(names)
+for val in names:
+    print(val)
+
