@@ -4,20 +4,56 @@
     Register
 {% endblock %}
 
+{% block script %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+
+        document.querySelector('form').onsubmit = function() {
+            const username = document.querySelector('#username').value;
+            const password = document.querySelector('#password').value;
+            const confirmation = document.querySelector('#confirmation').value;
+
+            if (username.length === 0)
+            {
+                alert('username required!');
+                return false;
+            }
+            else if (password.length === 0)
+            {
+                alert('password required!');
+                return false;
+            }
+            else if (confirmation.length === 0)
+            {
+                alert('confirmation required!');
+                return false;
+            }
+            else if (confirmation != password)
+            {
+                alert('confirmation and password do not match!');
+                return false;
+            }
+            // submit
+            return true;
+        }
+    });
+</script>
+{% endblock %}
+
 {% block main %}
     <form action="/register" method="post">
         <div class="mb-3">
             <input autocomplete="off" autofocus class="form-control mx-auto w-auto" id="username" name="username" placeholder="Username" type="text">
         </div>
-        <h6>{{ message1 }}</h6>
+        <h6 id="message1">{{ message1 }}</h6>
         <div class="mb-3">
             <input class="form-control mx-auto w-auto" id="password" name="password" placeholder="Password" type="password">
         </div>
-        <h6>{{ message2 }}</h6>
+        <h6 id="message2">{{ message2 }}</h6>
         <div class="mb-3">
             <input class="form-control mx-auto w-auto" id="confirmation" name="confirmation" placeholder="Confirmation" type="password">
         </div>
-        <h6>{{ message3 }}</h6>
+        <h6 id="message3">{{ message3 }}</h6>
         <button class="btn btn-primary" type="submit">Register</button>
     </form>
 {% endblock %}

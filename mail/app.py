@@ -121,27 +121,14 @@ def register():
     """Register user"""
     if request.method == "POST":
         username = request.form.get("username")
-        if not username:
-            message = 'Must provide username!'
-            return render_template("register.html", message1=message)
         password = request.form.get("password")
-        if not password:
-            message = 'Must provide password!'
-            return render_template("register.html", message2=message)
         confirmation = request.form.get("confirmation")
-        if not confirmation:
-            message = 'Must confirm password!'
-            return render_template("register.html", message3=message)
 
         # Check whether if username exists in database or not
         rows = db.execute("SELECT * FROM users WHERE username = ?", username)
         if len(rows) != 0:
             message = 'User already exists!'
             return render_template("register.html", message1=message)
-
-        if confirmation != password:
-            message = 'Password confirmation not correct!'
-            return render_template("register.html", message3=message)
 
         # hash password
         hash = generate_password_hash(password, method='pbkdf2:sha256', salt_length=8)
