@@ -159,17 +159,21 @@ def information():
         birth = request.form.get("birth")
         place = request.form.get("place")
         number = request.form.get("number")
+
         email = request.form.get("email")
+        # Check if email is valid or not
+        emails = []
+        rows = db.execute("SELECT email FROM informations WHERE NOT user_id = ?", user_id)
+        for row in rows:
+            emails.append(row['email'])
+        if email in emails:
+            message = 'Invalid email (email already exists)!'
+            return render_template("information.html", message=message)
         
         db.execute("DELETE FROM informations WHERE user_id = ?", user_id)
 
         # Update Informations
-        try:
-            db.execute("INSERT INTO informations (user_id, name, birth, place, number, email) VALUES(?, ?, ?, ?, ?, ?)", user_id, name, birth, place, number, email)
-        except:
-            message = 'Invalid email (email already exists)!'
-            return render_template("information.html", message=message)
-
+        db.execute("INSERT INTO informations (user_id, name, birth, place, number, email) VALUES(?, ?, ?, ?, ?, ?)", user_id, name, birth, place, number, email)
         # Turn back to index
         return redirect("/")
 

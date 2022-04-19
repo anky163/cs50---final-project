@@ -79,8 +79,16 @@
         <main class="container-fluid py-5 text-center">
             {% block main %}{% endblock %}
         </main>
+
+        <!--Infomation.html-->
+        <div class="container-fluid py-5">
+            {% block information %}{% endblock %}
+        </div>
+        
     </body>
 
+
+    <!--If user wants to delete their account-->
     <footer>
         <main class="container-fluid py-5 text-center">
             <form action="/" method="post">

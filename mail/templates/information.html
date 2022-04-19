@@ -30,25 +30,48 @@
 </script>
 {% endblock %}
 
-{% block main %}
-    <form action="/information" method="post">
-        <div class="mb-3">
-            <input autocomplete="off" autofocus class="form-control mx-auto w-auto" id="name" name="name" placeholder="Name" type="text">
-        </div>
-        <h6 id="message1"></h6>
-        <div class="mb-3">
-            <input class="form-control mx-auto w-auto" id="birth" name="birth" placeholder="Birth" type="text">
-        </div>
-        <div class="mb-3">
-            <input class="form-control mx-auto w-auto" id="place" name="place" placeholder="Place" type="text">
-        </div>
-        <div class="mb-3">
-            <input class="form-control mx-auto w-auto" id="number" name="number" placeholder="Number" type="text">
-        </div>
-        <div class="mb-3">
-            <input class="form-control mx-auto w-auto" id="email" name="email" placeholder="Email" type="text">
-        </div>
-        <h6 id="message2">{{ message }}</h6>
+{% block information %}
+
+<form class="row g-3 needs-validation" novalidate style="display: flex;" action="/information" method="post">
+      
+    <!--Name's field--> 
+    <div class="col-md-4">
+        <label for="validationCustom01" class="form-label">Name</label>
+        <input type="text" class="form-control" id="name" name="name" required>
+    </div>
+
+    <!--Birth's field--> 
+    <div class="col-md-4">
+        <label for="validationCustom01" class="form-label">Birth</label>
+        <input type="text" class="form-control" id="birth" name="birth" required>
+    </div>
+
+    <!--Place's field--> 
+    <div class="col-md-4">
+        <label for="validationCustom01" class="form-label">Place</label>
+        <input type="text" class="form-control" id="place" name="place" required>
+    </div>
+
+    <!--Number's field--> 
+    <div class="col-md-6">
+        <label for="validationCustom01" class="form-label">Number</label>
+        <input type="text" class="form-control" id="number" name="number" required>
+    </div>
+
+    <!--Email's field--> 
+    <div class="col-md-6">
+        <label for="validationCustom01" class="form-label">Email</label>
+        <input type="text" class="form-control" id="email" name="email" placeholder="example@email.com" required>
+    </div>
+
+    <br>
+
+    <!--Submit button--> 
+    <div class="col-12">
         <button class="btn btn-primary" type="submit">Submit</button>
-    </form>
+    </div>
+    <h6>{{ message }}</h6>
+
+</form>
+
 {% endblock %}
