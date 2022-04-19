@@ -17,6 +17,24 @@
         <link href="/static/styles.css" rel="stylesheet">
         <title>MAIL: {% block title %}{% endblock %}</title>
         {% block script %}{% endblock %}
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                
+                document.querySelector('#deleteAccount').onclick = function() {
+                    let deleteAccount = confirm("Do you really want to delete your account?");
+                    if (deleteAccount === true)
+                    {
+                        // If user answers 'yes', then submit
+                        return true;
+                    }
+                    else
+                    {
+                        // Do not submit
+                        return false;
+                    }
+                }
+            });
+        </script>
 
     </head>
 
@@ -64,9 +82,12 @@
     </body>
 
     <footer>
-        <form action="/" method="post" style="float: center" class="container-fluid py-5 text-center">
-            <button class="btn btn-primary" type="submit">Delete Account</button>
-        </form>
+        <main class="container-fluid py-5 text-center">
+            <form action="/" method="post">
+                <button id="deleteAccount" class="btn btn-primary" type="submit">Delete Account</button>
+            </form>
+        </main>
+
     </footer>
 
 </html>

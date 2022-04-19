@@ -51,10 +51,11 @@ def index():
         rows = db.execute("SELECT * FROM informations WHERE user_id = ?", user_id)
         return render_template("index.html", rows=rows)
     
-    # If delete account
+    # DELETE ACCOUNT
     user_id = session['user_id']
     db.execute("DELETE FROM users WHERE id = ?", user_id)
     db.execute("DELETE FROM informations WHERE user_id = ?", user_id)
+    # mail_box not deleted
     
     # Turn to REGISTER
     return redirect("/login")
