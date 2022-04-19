@@ -185,9 +185,7 @@ def send():
 
         # Find friend
         receiver = request.form.get("receiver")
-        if not receiver:
-            message = 'Name required!'
-            return render_template("send.html", message1=message)
+
         user_names = db.execute("SELECT name FROM informations")
         names = []
         for row in user_names:
@@ -197,9 +195,7 @@ def send():
             return render_template("send.html", message1=message)
         
         email = request.form.get("email")
-        if not email:
-            message = 'Email required!'
-            return render_template("send.html", message2=message)
+
         user_emails = db.execute("SELECT email FROM informations")
         emails = []
         for row in user_emails:
@@ -207,6 +203,8 @@ def send():
         if email not in emails:
             message = 'Email does not exist!'
             return render_template("send.html", message2=message)
+
+        mail = request.form.get("mail")
 
         # IF NAME AND EMAIL DON'T MATCH
         receiver_emails = db.execute("SELECT email FROM informations WHERE name = ?", receiver)
@@ -223,11 +221,6 @@ def send():
         if email == sender_email:
             message = "You cannot mail for yourself!"
             return render_template("send.html", message4=message)
-
-        mail = request.form.get("mail")
-        if not mail:
-            message = 'Your mail is empty!'
-            return render_template("send.html", message3=message)
 
         receiver_id = db.execute("SELECT user_id FROM informations WHERE email = ?", email)[0]['user_id']
         sender = db.execute("SELECT name FROM informations WHERE user_id = ?", sender_id)[0]['name']

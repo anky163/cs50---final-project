@@ -4,22 +4,53 @@
     Find
 {% endblock %}
 
+{% block script %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+
+        document.querySelector('form').onsubmit = function() {
+            const receiver = document.querySelector('#receiver').value;
+            const email = document.querySelector('#email').value;
+            const mail = document.querySelector('#mail').value;
+
+            if (receiver.length === 0)
+            {
+                alert("receiver's name required!");
+                return false;
+            }
+            else if (email.length === 0)
+            {
+                alert("receiver's email required!");
+                return false;
+            }
+            else if (mail.length === 0)
+            {
+                alert("mail's content required!");
+                return false;
+            }
+            // submit
+            return true;
+        }
+    });
+</script>
+{% endblock %}
+
 {% block main %}
     <form action="/send" method="post">
         <div class="mb-3">
             <input autofocus class="form-control mx-auto w-auto" id="receiver" name="receiver" placeholder="Friend's name" type="text">
         </div>
-        <h6>{{ message1 }}</h6>
+        <h6 id="message1">{{ message1 }}</h6>
         <div class="mb-3">
             <input class="form-control mx-auto w-auto" id="email" name="email" placeholder="Email" type="text">
         </div>
-        <h6>{{ message2 }}</h6>
+        <h6 id="message2">{{ message2 }}</h6>
         <div class="mb-3">
             <input class="form-control mx-auto w-auto" id="mail" name="mail" placeholder="Your mail" type="text">
         </div>
-        <h6>{{ message3 }}</h6>
+
         <button class="btn btn-primary" type="submit">Send</button>
-        <h6>{{ message4 }}</h6>
+        <h6 id="message4">{{ message4 }}</h6>
     </form>
    
 {% endblock %}
