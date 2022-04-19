@@ -72,13 +72,7 @@ def login():
 
     if request.method == "POST":
         username = request.form.get("username")
-        if not username:
-            message = 'Username required!'
-            return render_template("login.html", message1=message)
         password = request.form.get("password")
-        if not password:
-            message = 'Password required!'
-            return render_template("login.html", message2=message)
 
         # Check if user exists in database
         rows = db.execute("SELECT * FROM users WHERE username = ?", username)
