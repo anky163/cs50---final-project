@@ -55,7 +55,7 @@ def index():
     user_id = session['user_id']
     db.execute("DELETE FROM users WHERE id = ?", user_id)
     db.execute("DELETE FROM informations WHERE user_id = ?", user_id)
-    # mail_box not deleted
+    db.execute("DELETE FROM mail_box WHERE sender_id = ? OR receiver_id = ?", user_id, user_id)
     
     # Turn to REGISTER
     return redirect("/login")
@@ -174,6 +174,9 @@ def information():
 
         # Update Informations
         db.execute("INSERT INTO informations (user_id, name, birth, place, number, email) VALUES(?, ?, ?, ?, ?, ?)", user_id, name, birth, place, number, email)
+        # Update Mail box
+        db.execute("UPDATE mail_box SET sender = ? WHERE sender_id = ?", name, user_id)
+        db.execute("UPDATE mail_box SET receiver = ? WHERE receiver_id = ?", name, user_id)
         # Turn back to index
         return redirect("/")
 
@@ -262,13 +265,82 @@ def mail():
 
 
 # CHECK HISTORY
-@app.route("/history")
+@app.route("/history", methods=["GET", "POST"])
 @login_required
 def history():
+    if request.method == "GET":
+        user_id = session['user_id']
+        rows = db.execute("SELECT * FROM mail_box WHERE sender_id = ? OR receiver_id = ?", user_id, user_id)
+        
+        histories = []
+        user_email = db.execute("SELECT email FROM informations WHERE user_id = ?", user_id)[0]['email']
+
+        for row in rows:
+            history = {}
+            history['sender'] = row['sender']
+            history['sender_email'] = db.execute("SELECT email FROM informations WHERE user_id = ?", row['sender_id'])[0]['email']
+            history['receiver'] = row['receiver']
+            history['receiver_email'] = db.execute("SELECT email FROM informations WHERE user_id = ?", row['receiver_id'])[0]['email']
+            history['mail'] = row['mail']
+            history['date'] = row['date']
+
+            if history['sender_email'] == user_email:
+                history['sender'] = 'You'
+
+            elif history['receiver_email'] == user_email:
+                history['receiver'] = 'You'
+
+            histories.append(history)
+        return render_template("history.html", histories=histories)
+
+
+    # Finding mail histories
     user_id = session['user_id']
-    rows = db.execute("SELECT * FROM mail_box WHERE sender_id = ? OR receiver_id = ?", user_id, user_id)
-    
     histories = []
+
+    sender_email = request.form.get('sender_email')
+    receiver_email = request.form.get('receiver_email')
+    date = request.form.get('date')
+
+    # Find current user's email
+    user_email = db.execute("SELECT email FROM informations WHERE user_id = ?", user_id)[0]['email']
+
+    
+    # If there is no pair of user and sender/receiver
+    if sender_email == user_email:
+        rows = db.execute("SELECT email FROM informations JOIN mail_box ON informations.user_id = mail_box.receiver_id WHERE sender_id = ?", user_id)
+        receiver_emails = []
+        for row in rows:
+            receiver_emails.append(row['email'])
+        if receiver_email not in receiver_emails:
+            message = 'Not found!'
+            return render_template("history.html", message4=message)
+
+    elif receiver_email == user_email:
+        rows = db.execute("SELECT email FROM informations JOIN mail_box ON informations.user_id = mail_box.sender_id WHERE receiver_id = ?", user_id)
+        sender_emails = []
+        for row in rows:
+            sender_emails.append(row['email'])
+        if sender_email not in sender_emails:
+            message = 'Not found!'
+            return render_template("history.html", message4=message)
+
+    else: # Both sender and receiver are not the current user
+        message = 'Not found!'
+        return render_template("history.html", message4=message)
+
+    sender_id = db.execute("SELECT user_id FROM informations WHERE email = ?", sender_email)[0]['user_id']
+    receiver_id = db.execute("SELECT user_id FROM informations WHERE email = ?", receiver_email)[0]['user_id']
+
+    # If user didn't fill date's field
+    if not date:
+        rows = db.execute("SELECT * FROM mail_box WHERE sender_id = ? AND receiver_id = ?", sender_id, receiver_id)
+    # If users DID fill date's field
+    else:
+        rows = db.execute("SELECT * FROM mail_box WHERE sender_id = ? AND receiver_id = ? AND date = ?", sender_id, receiver_id, date)
+        if len(rows) == 0:
+            message = 'Not found!'
+            return render_template("history.html", message4=message)
 
     for row in rows:
         history = {}
@@ -278,10 +350,11 @@ def history():
         history['receiver_email'] = db.execute("SELECT email FROM informations WHERE user_id = ?", row['receiver_id'])[0]['email']
         history['mail'] = row['mail']
         history['date'] = row['date']
+
         histories.append(history)
-
     return render_template("history.html", histories=histories)
-
+    
+    
 
 
 # CHANGE INFORMATION

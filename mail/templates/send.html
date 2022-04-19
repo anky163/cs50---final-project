@@ -35,20 +35,20 @@
 </script>
 {% endblock %}
 
-{% block main %}
+{% block send %}
 
     <form action="/send" method="post">
         <div class="mb-3">
-            <input autofocus class="form-control mx-auto w-auto" id="receiver" name="receiver" placeholder="Receiver's name" type="text">
+            <input autofocus class="form-control w-auto" id="receiver" name="receiver" placeholder="Receiver's name" type="text">
         </div>
         <h6 id="message1">{{ message1 }}</h6>
         <div class="mb-3">
-            <input class="form-control mx-auto w-auto" id="email" name="email" placeholder="name@example.com" type="text">
+            <input class="form-control w-auto" id="email" name="email" placeholder="name@example.com" type="text">
         </div>
         <h6 id="message2">{{ message2 }}</h6>
         <div class="form-floating">
-            <input class="form-control" id="floatingMail" name="mail" placeholder="Mail" type="text">
-            <label for="floatingMail">Mail</label>
+            <input class="form-control" id="floatingMail" name="mail" type="text">
+            <label for="floatingMail">Mail nhớ chỉnh cho text đụng hết chiều ngang hoặc bấm Enter là xuống dòng</label>
         </div>
         <br>
         <button class="btn btn-primary" type="submit">Send</button>

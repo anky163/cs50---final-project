@@ -14,8 +14,10 @@ from helpers import login_required
 # Configure CS50 Library to use SQLite database
 db = SQL("sqlite:///mail.db")
 
-emails = []
-rows = db.execute("SELECT email FROM informations WHERE NOT user_id = ?", 34)
-for row in rows:
-    emails.append(row['email'])
-print(emails)
+sender_id = db.execute("SELECT user_id FROM informations WHERE email = ?", 'huyen@gmail.com')[0]['user_id']
+receiver_id = db.execute("SELECT user_id FROM informations WHERE email = ?", 'nghia@gmail.com')[0]['user_id']
+print(sender_id)
+print(receiver_id)
+
+rows = db.execute("SELECT * FROM mail_box WHERE sender_id = ? AND receiver_id = ?", sender_id , receiver_id)
+print(rows)
