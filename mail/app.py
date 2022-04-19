@@ -155,22 +155,10 @@ def information():
         user_id = session['user_id']
 
         name = request.form.get("name")
-        if not name:
-            message = 'Name required!'
-            return render_template("information.html", message1=message)
         birth = request.form.get("birth")
         place = request.form.get("place")
         number = request.form.get("number")
         email = request.form.get("email")
-
-        #Check whether email exist in database or not
-        rows = db.execute("SELECT email FROM informations WHERE NOT user_id = ?", user_id)
-        emails = []
-        for row in rows:
-            emails.append(row['email'])
-        if email in emails:
-            message = 'Invalid email (email already exists)!'
-            return render_template("information.html", message2=message)
         
         db.execute("DELETE FROM informations WHERE user_id = ?", user_id)
 
@@ -179,7 +167,7 @@ def information():
             db.execute("INSERT INTO informations (user_id, name, birth, place, number, email) VALUES(?, ?, ?, ?, ?, ?)", user_id, name, birth, place, number, email)
         except:
             message = 'Invalid email (email already exists)!'
-            return render_template("information.html", message2=message)
+            return render_template("information.html", message=message)
 
         # Turn back to index
         return redirect("/")

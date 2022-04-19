@@ -4,12 +4,38 @@
     Information
 {% endblock %}
 
+{% block script %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+
+        document.querySelector('form').onsubmit = function() {
+            const name = document.querySelector('#name').value;
+            const email = document.querySelector('#email').value;
+
+            if (name.length === 0)
+            {
+                alert('name required!');
+                return false;
+            }
+            else if (email.length === 0)
+            {
+                alert('email required!');
+                return false;
+            }
+
+            // submit
+            return true;
+        }
+    });
+</script>
+{% endblock %}
+
 {% block main %}
     <form action="/information" method="post">
         <div class="mb-3">
             <input autocomplete="off" autofocus class="form-control mx-auto w-auto" id="name" name="name" placeholder="Name" type="text">
         </div>
-        <h6>{{ message1 }}</h6>
+        <h6 id="message1"></h6>
         <div class="mb-3">
             <input class="form-control mx-auto w-auto" id="birth" name="birth" placeholder="Birth" type="text">
         </div>
@@ -22,7 +48,7 @@
         <div class="mb-3">
             <input class="form-control mx-auto w-auto" id="email" name="email" placeholder="Email" type="text">
         </div>
-        <h6>{{ message2 }}</h6>
+        <h6 id="message2">{{ message }}</h6>
         <button class="btn btn-primary" type="submit">Submit</button>
     </form>
 {% endblock %}
