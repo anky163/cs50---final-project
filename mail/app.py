@@ -1,6 +1,7 @@
 # WHO'S YOUR DADDY ?!
 
 import os
+from unittest.main import MAIN_EXAMPLES
 from click import confirmation_option
 
 from cs50 import SQL
@@ -56,6 +57,7 @@ def index():
     db.execute("DELETE FROM users WHERE id = ?", user_id)
     db.execute("DELETE FROM informations WHERE user_id = ?", user_id)
     db.execute("DELETE FROM mail_box WHERE sender_id = ? OR receiver_id = ?", user_id, user_id)
+    db.execute("DELETE FROM friends WHERE friend_id = ?", user_id)
     
     # Turn to REGISTER
     return redirect("/login")
@@ -147,6 +149,97 @@ def register():
     return render_template("register.html")
 
 
+
+# SENDING EMAIL
+
+@app.route("/sent", methods=["GET", "POST"])
+@login_required
+def sent():
+    if request.method == "POST":
+
+        # Find friend
+        receiver = request.form.get("receiver")
+
+        user_names = db.execute("SELECT name FROM informations")
+        names = []
+        for row in user_names:
+            names.append(row['name'])
+        if receiver not in names:
+            message = 'Name does not exist!'
+            return render_template("sent.html", message1=message)
+        
+        email = request.form.get("email")
+
+        user_emails = db.execute("SELECT email FROM informations")
+        emails = []
+        for row in user_emails:
+            emails.append(row['email'])
+        if email not in emails:
+            message = 'Email does not exist!'
+            return render_template("sent.html", message2=message)
+
+        mail = request.form.get("mail")
+
+        # IF NAME AND EMAIL DON'T MATCH
+        receiver_emails = db.execute("SELECT email FROM informations WHERE name = ?", receiver)
+        emails = []
+        for row in receiver_emails:
+            emails.append(row['email'])
+        if email not in emails:
+            message = "Name and Email don't match!"
+            return render_template("sent.html", message2=message)
+
+        # IF user mails for themselves:
+        sender_id = session['user_id']
+        sender_email = db.execute("SELECT email FROM informations WHERE user_id = ?", sender_id)[0]['email']
+        if email == sender_email:
+            message = "You cannot mail for yourself!"
+            return render_template("sent.html", message4=message)
+
+        receiver_id = db.execute("SELECT user_id FROM informations WHERE email = ?", email)[0]['user_id']
+        sender = db.execute("SELECT name FROM informations WHERE user_id = ?", sender_id)[0]['name']
+        receiver = db.execute("SELECT name FROM informations WHERE user_id = ?", receiver_id)[0]['name']
+        date = datetime.datetime.now()
+
+        db.execute("INSERT INTO mail_box (sender_id, receiver_id, sender, receiver, date, mail) VALUES (?, ?, ?, ?, ?, ?)", sender_id, receiver_id, sender, receiver, date, mail)
+        return redirect("/sent")
+
+    user_id = session['user_id']
+    rows = db.execute("SELECT * FROM mail_box WHERE sender_id = ? ORDER BY date DESC", user_id)
+    mails = []
+    for row in rows:
+        mail = {}
+        mail['receiver'] = row['receiver']
+        receiver_id = row['receiver_id']
+        mail['email'] = db.execute("SELECT email FROM informations WHERE user_id = ?", receiver_id)[0]['email']
+        mail['mail'] = row['mail']
+        mail['date'] = row['date']
+        mails.append(mail)
+    return render_template("sent.html", mails=mails)
+
+
+
+# CHECK INBOX
+
+@app.route("/inbox")
+@login_required
+def inbox():
+    user_id = session['user_id']
+    rows = db.execute("SELECT * FROM mail_box WHERE receiver_id = ? ORDER BY date DESC", user_id)
+    mails = []
+    for row in rows:
+        mail = {}
+        mail['sender'] = row['sender']
+        sender_id = row['sender_id']
+        mail['email'] = db.execute("SELECT email FROM informations WHERE user_id = ?", sender_id)[0]['email']
+        mail['mail'] = row['mail']
+        mail['date'] = row['date']
+        mails.append(mail)
+    return render_template("inbox.html", mails=mails)
+
+
+
+
 # INFORMATION
 
 @app.route("/information", methods=["GET", "POST"])
@@ -184,182 +277,35 @@ def information():
 
 
 
-# FIND FRIEND AND SEND EMAIL
-
-@app.route("/send", methods=["GET", "POST"])
-@login_required
-def send():
-    if request.method == "POST":
-
-        # Find friend
-        receiver = request.form.get("receiver")
-
-        user_names = db.execute("SELECT name FROM informations")
-        names = []
-        for row in user_names:
-            names.append(row['name'])
-        if receiver not in names:
-            message = 'Name does not exist!'
-            return render_template("send.html", message1=message)
-        
-        email = request.form.get("email")
-
-        user_emails = db.execute("SELECT email FROM informations")
-        emails = []
-        for row in user_emails:
-            emails.append(row['email'])
-        if email not in emails:
-            message = 'Email does not exist!'
-            return render_template("send.html", message2=message)
-
-        mail = request.form.get("mail")
-
-        # IF NAME AND EMAIL DON'T MATCH
-        receiver_emails = db.execute("SELECT email FROM informations WHERE name = ?", receiver)
-        emails = []
-        for row in receiver_emails:
-            emails.append(row['email'])
-        if email not in emails:
-            message = "Name and Email don't match!"
-            return render_template("send.html", message2=message)
-
-        # IF user mails for themselves:
-        sender_id = session['user_id']
-        sender_email = db.execute("SELECT email FROM informations WHERE user_id = ?", sender_id)[0]['email']
-        if email == sender_email:
-            message = "You cannot mail for yourself!"
-            return render_template("send.html", message4=message)
-
-        receiver_id = db.execute("SELECT user_id FROM informations WHERE email = ?", email)[0]['user_id']
-        sender = db.execute("SELECT name FROM informations WHERE user_id = ?", sender_id)[0]['name']
-        receiver = db.execute("SELECT name FROM informations WHERE user_id = ?", receiver_id)[0]['name']
-        date = datetime.datetime.now()
-
-        db.execute("INSERT INTO mail_box (sender_id, receiver_id, sender, receiver, date, mail) VALUES (?, ?, ?, ?, ?, ?)", sender_id, receiver_id, sender, receiver, date, mail)
-        return redirect("/send")
-
-    return render_template("send.html")
-
-
-# CHECK MAIL
-@app.route("/mail")
-@login_required
-def mail():
-
-    # Get informations from mail_box
-    user_id = session['user_id']
-    mails_received = db.execute("SELECT * FROM mail_box WHERE receiver_id = ?", user_id)
-
-    mails = []
-    
-    for row in mails_received:
-        value = {}
-        value['sender'] = row['sender']
-        value['email'] = db.execute("SELECT email FROM informations WHERE user_id = ?", row['sender_id'])[0]['email']
-        value['mail'] = row['mail']
-        value['date'] = row['date']
-        mails.append(value)
-    
-    return render_template("mail.html", mails=mails)
-
-
-
-# CHECK HISTORY
-@app.route("/history", methods=["GET", "POST"])
-@login_required
-def history():
-    if request.method == "GET":
-        user_id = session['user_id']
-        rows = db.execute("SELECT * FROM mail_box WHERE sender_id = ? OR receiver_id = ?", user_id, user_id)
-        if len(rows) == 0:
-            return render_template("history.html")
-        
-        histories = []
-        user_email = db.execute("SELECT email FROM informations WHERE user_id = ?", user_id)[0]['email']
-
-        for row in rows:
-            history = {}
-            history['sender'] = row['sender']
-            history['sender_email'] = db.execute("SELECT email FROM informations WHERE user_id = ?", row['sender_id'])[0]['email']
-            history['receiver'] = row['receiver']
-            history['receiver_email'] = db.execute("SELECT email FROM informations WHERE user_id = ?", row['receiver_id'])[0]['email']
-            history['mail'] = row['mail']
-            history['date'] = row['date']
-
-            if history['sender_email'] == user_email:
-                history['sender'] = 'You'
-
-            elif history['receiver_email'] == user_email:
-                history['receiver'] = 'You'
-
-            histories.append(history)
-        return render_template("history.html", histories=histories)
-
-
-    # Finding mail histories
-    user_id = session['user_id']
-    histories = []
-
-    sender_email = request.form.get('sender_email')
-    receiver_email = request.form.get('receiver_email')
-    date = request.form.get('date')
-
-    # Find current user's email
-    user_email = db.execute("SELECT email FROM informations WHERE user_id = ?", user_id)[0]['email']
-
-    
-    # If there is no pair of user and sender/receiver
-    if sender_email == user_email:
-        rows = db.execute("SELECT email FROM informations JOIN mail_box ON informations.user_id = mail_box.receiver_id WHERE sender_id = ?", user_id)
-        receiver_emails = []
-        for row in rows:
-            receiver_emails.append(row['email'])
-        if receiver_email not in receiver_emails:
-            message = 'Not found!'
-            return render_template("history.html", message4=message)
-
-    elif receiver_email == user_email:
-        rows = db.execute("SELECT email FROM informations JOIN mail_box ON informations.user_id = mail_box.sender_id WHERE receiver_id = ?", user_id)
-        sender_emails = []
-        for row in rows:
-            sender_emails.append(row['email'])
-        if sender_email not in sender_emails:
-            message = 'Not found!'
-            return render_template("history.html", message4=message)
-
-    else: # Both sender and receiver are not the current user
-        message = 'Not found!'
-        return render_template("history.html", message4=message)
-
-    sender_id = db.execute("SELECT user_id FROM informations WHERE email = ?", sender_email)[0]['user_id']
-    receiver_id = db.execute("SELECT user_id FROM informations WHERE email = ?", receiver_email)[0]['user_id']
-
-    # If user didn't fill date's field
-    if not date:
-        rows = db.execute("SELECT * FROM mail_box WHERE sender_id = ? AND receiver_id = ?", sender_id, receiver_id)
-    # If users DID fill date's field
-    else:
-        rows = db.execute("SELECT * FROM mail_box WHERE sender_id = ? AND receiver_id = ? AND date = ?", sender_id, receiver_id, date)
-        if len(rows) == 0:
-            message = 'Not found!'
-            return render_template("history.html", message4=message)
-
-    for row in rows:
-        history = {}
-        history['sender'] = row['sender']
-        history['sender_email'] = db.execute("SELECT email FROM informations WHERE user_id = ?", row['sender_id'])[0]['email']
-        history['receiver'] = row['receiver']
-        history['receiver_email'] = db.execute("SELECT email FROM informations WHERE user_id = ?", row['receiver_id'])[0]['email']
-        history['mail'] = row['mail']
-        history['date'] = row['date']
-
-        histories.append(history)
-    return render_template("history.html", histories=histories)
-
-
-
 # CHANGE INFORMATION
 @app.route("/change_information")
 @login_required
 def change_information():
     return render_template("information.html")
+
+
+
+# CHANGE PASSWORD
+@app.route("/change_password", methods=["GET", "POST"])
+@login_required
+def change_password():
+    if request.method == "GET":
+        return render_template("change_password.html")
+
+    oldPassword = request.form.get('oldPassword')
+    newPassword = request.form.get('newPassword')
+
+    user_id = session['user_id']
+    hash = db.execute("SELECT hash FROM users WHERE id = ?", user_id)[0]['hash']
+
+    if not check_password_hash(hash, oldPassword):
+        message = 'Invalid password!'
+        return render_template("change_password.html", message1=message)
+
+    newPassword = generate_password_hash(newPassword, method='pbkdf2:sha256', salt_length=8)
+    # Update users database
+    db.execute("UPDATE users SET hash = ? WHERE id = ?", newPassword, user_id)
+    success = 'Changing password successed!'
+    return render_template("change_password.html", success=success)
+
+    

@@ -1,0 +1,50 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Inbox
+{% endblock %}
+
+{% block attribute %}
+<style>
+    h2 {
+        text-align: center;
+    }
+
+    #sent {
+        margin:auto;
+        border: 1px solid;
+        width: 50%;
+    }
+
+    #sent div {
+        border-bottom: 1px solid;
+    }
+
+    #sent #mail {
+        word-wrap: break-word;
+        overflow-y: scroll;
+        max-height: 100px;
+    }
+
+    #mail-sender {
+        text-align: center;
+        font-weight: bold;
+    }
+
+    #content {
+        text-align: left;
+    }
+</style>
+{% endblock %}
+
+{% block sent %}
+
+    <h2>Inbox</h2>
+    {% for mail in mails %}
+    <div id="sent">
+        <div><p id="mail-sender">{{ mail['sender'] }} <br> {{ mail['email'] }} <br> {{ mail['date'] }}</p></div>
+        <div id="mail"><p id="content">{{ mail['mail'] }}</p></div>
+    </div>
+    {% endfor %}
+
+{% endblock %}

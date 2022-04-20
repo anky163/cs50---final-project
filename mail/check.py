@@ -14,10 +14,6 @@ from helpers import login_required
 # Configure CS50 Library to use SQLite database
 db = SQL("sqlite:///mail.db")
 
-sender_id = db.execute("SELECT user_id FROM informations WHERE email = ?", 'huyen@gmail.com')[0]['user_id']
-receiver_id = db.execute("SELECT user_id FROM informations WHERE email = ?", 'nghia@gmail.com')[0]['user_id']
-print(sender_id)
-print(receiver_id)
+password = db.execute("SELECT hash FROM users WHERE id = ?", 21)[0]['hash']
 
-rows = db.execute("SELECT * FROM mail_box WHERE sender_id = ? AND receiver_id = ?", sender_id , receiver_id)
-print(rows)
+print(len(password))

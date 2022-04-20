@@ -1,7 +1,7 @@
 {% extends "layout.html" %}
 
 {% block title %}
-    Find
+    Sent
 {% endblock %}
 
 {% block script %}
@@ -35,9 +35,47 @@
 </script>
 {% endblock %}
 
-{% block send %}
 
-    <form action="/send" method="post">
+{% block attribute %}
+<style>
+    h2 {
+        text-align: center;
+    }
+
+    #sent {
+        margin:auto;
+        border: 1px solid;
+        width: 50%;
+    }
+
+    #sent div {
+        border-bottom: 1px solid;
+    }
+
+    #sent #mail {
+        word-wrap: break-word;
+        overflow-y: scroll;
+        max-height: 100px;
+    }
+
+    #mail-receiver {
+        text-align: center;
+        font-weight: bold;
+    }
+
+    #content {
+        text-align: left;
+    }
+
+    #floatingMail {
+        height: 100px;
+    }
+</style>
+{% endblock %}
+
+{% block sent %}
+
+    <form action="/sent" method="post">
         <div class="mb-3">
             <input autofocus class="form-control w-auto" id="receiver" name="receiver" placeholder="Receiver's name" type="text">
         </div>
@@ -48,11 +86,19 @@
         <h6 id="message2">{{ message2 }}</h6>
         <div class="form-floating">
             <input class="form-control" id="floatingMail" name="mail" type="text">
-            <label for="floatingMail">Mail nhớ chỉnh cho text đụng hết chiều ngang hoặc bấm Enter là xuống dòng</label>
+            <label for="floatingMail" class="form-label">Content</label>
         </div>
         <br>
         <button class="btn btn-primary" type="submit">Send</button>
         <h6 id="message4">{{ message4 }}</h6>
     </form>
+
+    <h2>Sent</h2>
+    {% for mail in mails %}
+    <div id="sent">
+        <div><p id="mail-receiver">{{ mail['receiver'] }} <br> {{ mail['email'] }} <br> {{ mail['date'] }}</p></div>
+        <div id="mail"><p id="content">{{ mail['mail'] }}</p></div>
+    </div>
+    {% endfor %}
 
 {% endblock %}
