@@ -12,31 +12,26 @@
 
         .parent {
             border: 1px gray solid;
-            overflow: hidden;
-            position: relative;
-            width: 100%;
-            float: left        
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
         .child-left {
-            float: left;
-            width: 20%;
+            height: 125px;
+            width: 350px;
             border-right: 1px gray solid;
+            float: left;
         }
         .child-right {
-            float: center;
-            display: block;
+            height: 125px;
+            width: 1000px;
+            overflow-y: scroll;
+             
         }
 
         .column {
             float: center;
             border-bottom: 1px gray solid;
-        }
-
-        p {
-            font-weight: bold;
-            word-break: break-word;
-            white-space: pre-wrap;
-            -moz-white-space: pre-wrap;  
         }
 
     </style>
@@ -130,7 +125,6 @@
                     </div>
                     <div class="child-right">
                         <p>{{ history['mail'] }}</p>    
-                        Chỉnh cho text xuống hàng khi bấm Enter hoặc đụng tường 
                     </div>
 
         </div>
