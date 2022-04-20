@@ -6,30 +6,39 @@
 
 {% block attribute %}
     <style>
-        h5 {
-            font-weight:normal;
+        .class {
+            border: 1px gray solid;
         }
 
-        h6 {
-            color:darkgrey;
+        .parent {
+            border: 1px gray solid;
+            overflow: hidden;
+            position: relative;
+            width: 100%;
+            float: left        
+        }
+        .child-left {
+            float: left;
+            width: 20%;
+            border-right: 1px gray solid;
+        }
+        .child-right {
+            float: center;
+            display: block;
         }
 
-        .head
-        {
-            font-size: small;
+        .column {
+            float: center;
+            border-bottom: 1px gray solid;
+        }
+
+        p {
             font-weight: bold;
-            float: center;
+            word-break: break-word;
+            white-space: pre-wrap;
+            -moz-white-space: pre-wrap;  
         }
 
-        #mail {
-            font-style: italic;
-            float: center;
-        }
-
-        #div_mail
-        {
-            height: 100px;
-        }
     </style>
 {% endblock %}
 
@@ -38,6 +47,7 @@
 <script>
     document.addEventListener('DOMContentLoaded', function() {
 
+        // Find mail
         document.querySelector('form').onsubmit = function() {
             const sender_email = document.querySelector('#sender_email').value;
             const receiver_email = document.querySelector('#receiver_email').value;
@@ -86,7 +96,7 @@
         <!--Date's field--> 
         <div class="col-md-4">
             <label for="validationCustom01" class="form-label">Date</label>
-            <input type="text" class="form-control" id="date" name="date" placeholder="dd/mm/yyyy hh:mm:ss">
+            <input type="text" class="form-control" id="date" name="date" placeholder="yyyy-mm-dd">
         </div>
 
         <br>
@@ -103,28 +113,29 @@
 
 <!--DISPLAY ALL HISTORIES-->
 {% block main %}
-    <h1>Your history</h1>
+    <h1>Your histories</h1>
     <br>
     <h4 id="message4">{{ message4 }}</h4>
 
     {% for history in histories %}
-    <table class="table table-striped">
-        <tr class="head">
-            <td>From</td>
-            
-            <td>{{ history['sender'] }} <br> {{ history['sender_email'] }}</td>           
-            
-            <td>To</td>
-            
-            <td>{{ history['receiver'] }} <br>  {{ history['receiver_email'] }}</td>     
-            
-            <td>{{ history['date'] }}</td>
-        </tr> 
-    </table>
-    <div id="div_mail">
-        <h5 id="mail">{{ history['mail'] }}</h5>    
-        <h6>Chỉnh cho text xuống hàng khi bấm Enter hoặc đụng tường</h6>   
-    </div>
+
+        <div class="parent">
+
+                    <div class="child-left">
+                            <div class="column"><h6>From {{ history['sender'] }} <br> {{ history['sender_email'] }}</h6></div>           
+                                    
+                            <div class="column">To {{ history['receiver'] }} <br>  {{ history['receiver_email'] }}</div>     
+                            
+                            <div class="column"><h6>{{ history['date'] }}</h6></div>
+                    </div>
+                    <div class="child-right">
+                        <p>{{ history['mail'] }}</p>    
+                        Chỉnh cho text xuống hàng khi bấm Enter hoặc đụng tường 
+                    </div>
+
+        </div>
+
+
     {% endfor %}
     
 

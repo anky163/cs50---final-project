@@ -25,12 +25,12 @@
                     let deleteAccount = confirm("Do you really want to delete your account?");
                     if (deleteAccount === true)
                     {
-                        // If user answers 'yes', then submit
+                        // If user answers 'yes', then delete their account
                         return true;
                     }
                     else
                     {
-                        // Do not submit
+                        // Do not delete their account
                         return false;
                     }
                 }
@@ -81,7 +81,7 @@
         <div class="container-fluid py-5">
             <!--information.html-->
             {% block information %}{% endblock %}
-            
+
             <!--send.html-->
             {% block send %}{% endblock %}
 

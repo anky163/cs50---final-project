@@ -271,6 +271,8 @@ def history():
     if request.method == "GET":
         user_id = session['user_id']
         rows = db.execute("SELECT * FROM mail_box WHERE sender_id = ? OR receiver_id = ?", user_id, user_id)
+        if len(rows) == 0:
+            return render_template("history.html")
         
         histories = []
         user_email = db.execute("SELECT email FROM informations WHERE user_id = ?", user_id)[0]['email']
@@ -353,8 +355,7 @@ def history():
 
         histories.append(history)
     return render_template("history.html", histories=histories)
-    
-    
+
 
 
 # CHANGE INFORMATION
