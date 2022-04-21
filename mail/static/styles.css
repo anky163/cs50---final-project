@@ -27,3 +27,7 @@ nav .navbar-brand .green
     background-color:red;
 }
 
+footer {
+    clear: both;
+}
+

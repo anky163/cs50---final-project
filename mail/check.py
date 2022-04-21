@@ -14,6 +14,7 @@ from helpers import login_required
 # Configure CS50 Library to use SQLite database
 db = SQL("sqlite:///mail.db")
 
-number_of_users = db.execute("SELECT COUNT(username) AS count FROM users")[0]['count']
-number_of_users = int(number_of_users)
-print(number_of_users)
+dates = '2002/12/08 11-25-31'
+date = '2002/12/08'
+date = '%' + date + '%'
+print(date)

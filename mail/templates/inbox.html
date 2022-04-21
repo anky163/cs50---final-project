@@ -6,8 +6,14 @@
 
 {% block attribute %}
 <style>
-    h2 {
+    h1 {
         text-align: center;
+        color: red;
+    }
+
+    h6 {
+        text-align: center;
+        color: rgb(255, 0, 170);
     }
 
     #sent {
@@ -34,17 +40,45 @@
     #content {
         text-align: left;
     }
+
+    #search {
+        float: left;
+    }
+
+    #search div input {
+        width: 240px;
+    }
 </style>
 {% endblock %}
 
 {% block sent %}
+<h1>Inbox</h1>
+{% endblock %}
 
-    <h2>Inbox</h2>
-    {% for mail in mails %}
-    <div id="sent">
-        <div><p id="mail-sender">{{ mail['sender'] }} <br> {{ mail['email'] }} <br> {{ mail['date'] }}</p></div>
-        <div id="mail"><p id="content">{{ mail['mail'] }}</p></div>
-    </div>
-    {% endfor %}
+{% block main %}
+<div>  
+    <form action="/search_inbox" method="post" id="search">
+        
+        <div><input autofocus id="name" name="name" placeholder="Sender's name" type="text"></div>
+        <h6>{{ name }}</h6>
+        <br>
+        <div><input autofocus id="sender_email" name="sender_email" placeholder="name@example.com" type="text"></div>
+        <h6>{{ email }}</h6>
+        <br>
+        <div><input autofocus id="date" name="date" placeholder="yyyy-mm-dd || yyyy-mm || yyyy" type="text"></div>  
+        <h6>{{ date }}</h6>
+        <br>    
+        <button class="btn btn-primary" type="submit">Search</button>
+    </form>
+</div>
+
+
+<h4>{{ notfound }}</h4>
+{% for mail in mails %}
+<div id="sent">
+    <div><p id="mail-sender">{{ mail['sender'] }} <br> {{ mail['email'] }} <br> {{ mail['date'] }}</p></div>
+    <div id="mail"><p id="content">{{ mail['mail'] }}</p></div>
+</div>
+{% endfor %}
 
 {% endblock %}

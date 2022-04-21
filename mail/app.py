@@ -2,6 +2,7 @@
 
 import os
 from unittest.main import MAIN_EXAMPLES
+from xml.dom import NotFoundErr
 from click import confirmation_option
 
 from cs50 import SQL
@@ -249,6 +250,70 @@ def sent():
         mails.append(mail)
     return render_template("sent.html", mails=mails)
 
+# SEARCH SENT MAILS IN sent.html
+@app.route("/search_sent", methods=["GET", "POST"])
+@login_required
+def search_sent():
+    if request.method == "POST":
+        user_id = session['user_id']
+        rows = []
+
+        name = request.form.get('name')
+        if not name:
+            message = "Name required!"
+            return render_template("sent.html", name=message)
+        receiver_email = request.form.get('receiver_email')
+        date = request.form.get('date')
+        if date:
+            date = '%' + date + '%'
+
+        # Check if name exists or not
+        user_names = db.execute("SELECT name FROM informations")
+        names = []
+        for row in user_names:
+            names.append(row['name'])
+        if name not in names:
+            message = 'Name does not exist!'
+            return render_template("sent.html", name=message)
+        
+
+        # If user did input receiver's email
+        if receiver_email:
+            email = db.execute("SELECT email FROM informations WHERE name = ? AND email = ?", name, receiver_email)
+            # If name and email do not match
+            if len(email) == 0:
+                message = "Name and Email don't match!"
+                return render_template("sent.html", email=message)
+            receiver_id = db.execute("SELECT user_id FROM informations WHERE email = ?", receiver_email)[0]['user_id']
+            if not date:
+                rows = db.execute("SELECT * FROM mail_box WHERE sender_id = ? AND receiver = ? AND receiver_id = ? ORDER BY date DESC", user_id, name, receiver_id)
+            else: 
+                rows = db.execute("SELECT * FROM mail_box WHERE sender_id = ? AND receiver = ? AND receiver_id = ? AND date LIKE ? ORDER BY date DESC", user_id, name, receiver_id, date)
+        # If user did not input receiver's email
+        else:
+            if date:
+                rows = db.execute("SELECT * FROM mail_box WHERE sender_id = ? AND receiver = ? AND date LIKE ? ORDER BY date DESC", user_id, name, date)
+
+  
+        # If user only type receiver's name
+        if not receiver_email and not date:
+            rows = db.execute("SELECT * FROM mail_box WHERE sender_id = ? AND receiver = ? ORDER BY date DESC", user_id, name)
+
+        if len(rows) == 0:
+            message = "Not found!"
+            return render_template("sent.html", notfound=message)
+
+        mails = []
+        for row in rows:
+            mail = {}
+            mail['receiver'] = row['receiver']
+            receiver_id = row['receiver_id']
+            mail['email'] = db.execute("SELECT email FROM informations WHERE user_id = ?", receiver_id)[0]['email']
+            mail['mail'] = row['mail']
+            mail['date'] = row['date']
+            mails.append(mail)
+        return render_template("sent.html", mails=mails)
+    return redirect("/sent")
 
 
 # CHECK INBOX
@@ -276,6 +341,71 @@ def inbox():
         mails.append(mail)
     return render_template("inbox.html", mails=mails)
 
+
+# SEARCH INBOX IN inbox.html
+@app.route("/search_inbox", methods=["GET", "POST"])
+@login_required
+def search_inbox():
+    if request.method == "POST":
+        user_id = session['user_id']
+        rows = []
+
+        name = request.form.get('name')
+        if not name:
+            message = "Name required!"
+            return render_template("inbox.html", name=message)
+        sender_email = request.form.get('sender_email')
+        date = request.form.get('date')
+        if date:
+            date = '%' + date + '%'
+
+        # Check if name exists or not
+        user_names = db.execute("SELECT name FROM informations")
+        names = []
+        for row in user_names:
+            names.append(row['name'])
+        if name not in names:
+            message = 'Name does not exist!'
+            return render_template("inbox.html", name=message)
+        
+
+        # If user did input receiver's email
+        if sender_email:
+            email = db.execute("SELECT email FROM informations WHERE name = ? AND email = ?", name, sender_email)
+            # If name and email do not match
+            if len(email) == 0:
+                message = "Name and Email don't match!"
+                return render_template("inbox.html", email=message)
+            sender_id = db.execute("SELECT user_id FROM informations WHERE email = ?", sender_email)[0]['user_id']
+            if not date:
+                rows = db.execute("SELECT * FROM mail_box WHERE receiver_id = ? AND sender = ? AND sender_id = ? ORDER BY date DESC", user_id, name, sender_id)
+            else: 
+                rows = db.execute("SELECT * FROM mail_box WHERE receiver_id = ? AND sender = ? AND sender_id = ? AND date LIKE ? ORDER BY date DESC", user_id, name, sender_id, date)
+        # If user did not input receiver's email
+        else:
+            if date:
+                rows = db.execute("SELECT * FROM mail_box WHERE receiver_id = ? AND sender = ? AND date LIKE ? ORDER BY date DESC", user_id, name, date)
+
+  
+        # If user only type receiver's name
+        if not sender_email and not date:
+            rows = db.execute("SELECT * FROM mail_box WHERE receiver_id = ? AND sender = ? ORDER BY date DESC", user_id, name)
+
+        if len(rows) == 0:
+            message = "Not found!"
+            return render_template("inbox.html", notfound=message)
+
+        mails = []
+        for row in rows:
+            mail = {}
+            mail['sender'] = row['sender']
+            sender_id = row['sender_id']
+            mail['email'] = db.execute("SELECT email FROM informations WHERE user_id = ?", sender_id)[0]['email']
+            mail['mail'] = row['mail']
+            mail['date'] = row['date']
+            mails.append(mail)
+        return render_template("inbox.html", mails=mails)
+    return redirect("/inbox")
 
 
 

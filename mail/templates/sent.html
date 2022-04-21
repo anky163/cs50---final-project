@@ -8,7 +8,7 @@
 <script>
     document.addEventListener('DOMContentLoaded', function() {
 
-        document.querySelector('form').onsubmit = function() {
+        document.querySelector('#send').onsubmit = function() {
             const receiver = document.querySelector('#receiver').value;
             const email = document.querySelector('#email').value;
             const mail = document.querySelector('#floatingMail').value;
@@ -38,8 +38,14 @@
 
 {% block attribute %}
 <style>
-    h2 {
+
+    h1 {
         text-align: center;
+        color: red;
+    }
+
+    h6 {
+        color: rgb(255, 0, 64);
     }
 
     #sent {
@@ -70,12 +76,23 @@
     #floatingMail {
         height: 100px;
     }
+
+    #search {
+        float: left;
+    }
+
+    #search div input {
+        width: 240px;
+    }
+
 </style>
 {% endblock %}
 
-{% block sent %}
 
-    <form action="/sent" method="post">
+
+{% block sent %}
+<div id="send">
+    <form action="/sent" method="post" id="send">
         <div class="mb-3">
             <input autofocus class="form-control w-auto" id="receiver" name="receiver" placeholder="Receiver's name" type="text">
         </div>
@@ -92,13 +109,35 @@
         <button class="btn btn-primary" type="submit">Send</button>
         <h6 id="message4">{{ message4 }}</h6>
     </form>
+</div>
+<h1>Sent</h1>
+{% endblock %}
 
-    <h2>Sent</h2>
-    {% for mail in mails %}
-    <div id="sent">
-        <div><p id="mail-receiver">{{ mail['receiver'] }} <br> {{ mail['email'] }} <br> {{ mail['date'] }}</p></div>
-        <div id="mail"><p id="content">{{ mail['mail'] }}</p></div>
-    </div>
-    {% endfor %}
+
+
+{% block main %}
+<div>  
+    <form action="/search_sent" method="post" id="search">
+        
+        <div><input autofocus id="name" name="name" placeholder="Receiver's name" type="text"></div>
+        <h6>{{ name }}</h6>
+        <br>
+        <div><input autofocus id="receiver_email" name="receiver_email" placeholder="name@example.com" type="text"></div>
+        <h6>{{ email }}</h6>
+        <br>
+        <div><input autofocus id="date" name="date" placeholder="yyyy-mm-dd || yyyy-mm || yyyy" type="text"></div>  
+        <h6>{{ date }}</h6>
+        <br>  
+        <button class="btn btn-primary" type="submit">Search</button>  
+    </form>
+</div>
+
+<h4>{{ notfound }}</h4>
+{% for mail in mails %}
+<div id="sent">
+    <div><p id="mail-receiver">{{ mail['receiver'] }} <br> {{ mail['email'] }} <br> {{ mail['date'] }}</p></div>
+    <div id="mail"><p id="content">{{ mail['mail'] }}</p></div>
+</div>
+{% endfor %}
 
 {% endblock %}
