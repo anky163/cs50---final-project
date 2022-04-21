@@ -11,7 +11,7 @@ from flask_session import Session
 from tempfile import mkdtemp
 from werkzeug.security import check_password_hash, generate_password_hash
 
-from helpers import login_required
+from helpers import login_required, convert_datetime
 
 import datetime
 
@@ -264,6 +264,7 @@ def search_sent():
             return render_template("sent.html", name=message)
         receiver_email = request.form.get('receiver_email')
         date = request.form.get('date')
+        date = convert_datetime(date)
         if date:
             date = '%' + date + '%'
 
@@ -356,6 +357,12 @@ def search_inbox():
             return render_template("inbox.html", name=message)
         sender_email = request.form.get('sender_email')
         date = request.form.get('date')
+        date = convert_datetime(date)
+
+        # Check result in inbox.html
+        """ message = date
+        return render_template("inbox.html", notfound=date) """
+
         if date:
             date = '%' + date + '%'
 
