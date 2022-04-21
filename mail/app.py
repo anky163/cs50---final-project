@@ -504,7 +504,31 @@ def change_password():
 @login_required
 def find():
     if request.method == "GET":
-        return render_template("find.html")
+        user_id = session['user_id']
+        rows = db.execute("SELECT * FROM informations WHERE NOT user_id = ? ORDER BY name", user_id)
+
+        people = []
+
+        for row in rows:
+            person = {}
+
+            person['name'] = row['name']
+            person['email'] = row['email']
+            person['birth'] = row['birth']
+            person['place'] = row['place']
+            person['number'] = row['number']
+
+            user_id = session['user_id']
+            friend_id = db.execute("SELECT user_id FROM informations WHERE email = ?", person['email'])[0]['user_id']
+            row = db.execute("SELECT * FROM friends WHERE host_id = ? AND friend_id = ?", user_id, friend_id)
+            if len(row) == 0:
+                person['operation'] = 'Add friend'
+            else:
+                person['operation'] = 'Unfriend'
+
+            people.append(person)
+
+        return render_template("find.html", people=people)
 
     name = request.form.get("name")
     if name:
@@ -527,15 +551,52 @@ def find():
         return render_template("find.html", message=message)
 
     people = []
+
     for row in rows:
         person = {}
+
         person['name'] = row['name']
         person['email'] = row['email']
         person['birth'] = row['birth']
         person['place'] = row['place']
         person['number'] = row['number']
+
+        user_id = session['user_id']
+        friend_id = db.execute("SELECT user_id FROM informations WHERE email = ?", person['email'])[0]['user_id']
+        row = db.execute("SELECT * FROM friends WHERE host_id = ? AND friend_id = ?", user_id, friend_id)
+        if len(row) == 0:
+            person['operation'] = 'Add friend'
+        else:
+            person['operation'] = 'Unfriend'
+
         people.append(person)
+
     return render_template("find.html", people=people)
 
 def new_func(row, person):
     person['email'] = row['email']
+
+
+# ADD FRIEND
+@app.route("/add", methods=["POST"])
+@login_required
+def add():
+    name = request.form.get("name")
+    email = request.form.get("email")
+ 
+    """# Check input/output
+    return render_template("find.html", name=name, email=email)"""
+
+    user_id = session['user_id']
+    friend_id = db.execute("SELECT user_id FROM informations WHERE name = ? AND email = ?", name, email)[0]['user_id']
+
+    # UPDATE table friends
+    row = db.execute("SELECT * FROM friends WHERE host_id = ? AND friend_id = ?", user_id, friend_id)
+    # If add friend
+    if len(row) == 0:
+        db.execute("INSERT INTO friends (host_id, friend_id) VALUES (?, ?)", user_id, friend_id)
+    # If unfriend
+    else:
+        db.execute("DELETE FROM friends WHERE host_id = ? AND friend_id = ?", user_id, friend_id)
+
+    return redirect("/find")
