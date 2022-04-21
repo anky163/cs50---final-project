@@ -73,8 +73,10 @@ def index():
     # Then update table 'database'
     number_of_users = int(db.execute("SELECT COUNT(username) AS count FROM users")[0]['count'])
     number_of_mails = int(db.execute("SELECT COUNT(mail) AS count FROM mail_box")[0]['count'])
+   
     db.execute("UPDATE database SET seq = ? WHERE name = 'users' OR name = 'informations'", number_of_users)
     db.execute("UPDATE database SET seq = ? WHERE name = 'mail_box'", number_of_mails)
+
     
     # Turn to REGISTER
     return redirect("/login")
@@ -599,4 +601,41 @@ def add():
     else:
         db.execute("DELETE FROM friends WHERE host_id = ? AND friend_id = ?", user_id, friend_id)
 
-    return redirect("/find")
+    number_of_friend_couples = int(db.execute("SELECT COUNT(id) AS count FROM friends ")[0]['count'])
+    db.execute("UPDATE database SET seq = ? WHERE name = 'friends'", number_of_friend_couples)
+
+    return redirect("/list")
+
+
+# FRIEND LIST
+@app.route("/list", methods=["GET", "POST"])
+@login_required
+def list():
+    if request.method == "GET":
+        user_id = session['user_id']
+        rows = db.execute("SELECT * FROM informations JOIN friends ON informations.user_id = friends.friend_id WHERE friends.host_id = ? ORDER BY name", user_id)
+
+        people = []
+
+        for row in rows:
+            person = {}
+
+            person['name'] = row['name']
+            person['email'] = row['email']
+            person['birth'] = row['birth']
+            person['place'] = row['place']
+            person['number'] = row['number']
+
+            user_id = session['user_id']
+            friend_id = db.execute("SELECT user_id FROM informations WHERE email = ?", person['email'])[0]['user_id']
+            row = db.execute("SELECT * FROM friends WHERE host_id = ? AND friend_id = ?", user_id, friend_id)
+            if len(row) == 0:
+                person['operation'] = 'Add friend'
+            else:
+                person['operation'] = 'Unfriend'
+
+            people.append(person)
+
+        return render_template("list.html", people=people)
+
+    return redirect("/add")

@@ -1,7 +1,7 @@
 {% extends "layout.html" %}
 
 {% block title %}
-    Find people
+    Friend list
 {% endblock %}
 
 {% block script %}
@@ -27,9 +27,9 @@
 
 {% block attribute %}
 <style>
-
     h2 {
-        color: orangered;
+        text-align: center;
+        color: green;
     }
 
     #message {
@@ -82,7 +82,10 @@
 </style>
 {% endblock %}
 
+{% block list %}{% endblock %}
+
 {% block main %}
+
 <div id="parent">
     <div id="find">
         <form action="/find" method="post">
@@ -102,7 +105,7 @@
     <h3>{{ name }}</h3> <!--Usage for checking input/output-->
     <h3>{{ email }}</h3> <!--Usage for checking input/output-->
 
-    <h2>Find someone you know</h2>
+    <h2>Your friends</h2>
     {% for person in people %}  
     <div id="result">
         <form action="/add" method="post">

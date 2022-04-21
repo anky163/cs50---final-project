@@ -52,6 +52,7 @@
                 <div class="collapse navbar-collapse" id="navbar">
                     {% if session["user_id"] %}
                         <ul class="navbar-nav me-auto mt-2">
+                            <li class="nav-item"><a class="nav-link" href="/list">Friend list</a></li>
                             <li class="nav-item"><a class="nav-link" href="/find">Find people</a></li>
                             <li class="nav-item"><a class="nav-link" href="/inbox">Inbox</a></li>
                             <li class="nav-item"><a class="nav-link" href="/sent">Sent</a></li>
@@ -91,6 +92,10 @@
 
             <!--add_friends.html-->
             {% block add_friends %}{% endblock %}
+
+
+            <!--list.html-->
+            {% block list %}{% endblock %}
         </div>
 
         <main class="container-fluid py-5 text-center">
