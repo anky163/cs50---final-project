@@ -1,0 +1,99 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Find people
+{% endblock %}
+
+{% block script %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+
+        document.querySelector('form').onsubmit = function() {
+            const name = document.querySelector('#name').value;
+            const email = document.querySelector('#email').value;
+
+            if (name.length === 0 && email.length === 0)
+            {
+                alert('Must provide atleast Name or Email required!');
+                return false;
+            }
+            // submit
+            return true;
+        }
+    });
+</script>
+{% endblock %}
+
+
+{% block attribute %}
+<style>
+    #message {
+        color: red;
+    }
+
+    #person {
+        color: blue;
+    }
+
+    .parent {
+        height: 100%;
+        width: 100%;
+    }
+
+    #find {
+        float: left;
+        padding-left: 30px;;
+    }
+
+    #result {
+        float: right;
+        width: 80%;
+        margin-right: 30px;
+       
+        border-bottom: gray dashed thin;
+    }
+
+    ul li {
+        list-style-type: none;
+    }
+
+</style>
+{% endblock %}
+
+{% block main %}
+<div id="parent">
+    <div id="find">
+        <form action="/find" method="post">
+            <div class="mb-3">
+                <input autofocus class="form-control mx-auto w-auto" id="name" name="name" placeholder="Name" type="text">
+            </div>
+            
+            <div class="mb-3">
+                <input class="form-control mx-auto w-auto" id="email" name="email" placeholder="example@email.com" type="text">
+            </div>
+            
+            <button class="btn btn-primary" type="submit">Find</button>
+        
+            <h3 id="messages">{{ message }}</h3>
+        </form>
+    </div>
+    {% for person in people %}
+    <div id="result">
+        <ul>
+            <li><h3 id="person">{{ person["name"] }}</h3></li>
+            <li><h4>{{ person["email"] }}</h4></li>
+            {% if person["birth"] %}
+            <li><h6>{{ person["birth"] }}</h6></li>
+            {% endif %}
+            {% if person["place"] %}
+            <li><h6>{{ person["place"] }}</h6></li>
+            {% endif %}
+            {% if person["number"] %}
+            <li><h6>{{ person["number"] }}</h6></li>
+            {% endif %}
+        </ul>
+        <br>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

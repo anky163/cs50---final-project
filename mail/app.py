@@ -498,3 +498,41 @@ def change_password():
     return render_template("change_password.html", success=success)
 
     
+
+# FINDING PEOPLE
+@app.route("/find", methods = ["GET", "POST"])
+@login_required
+def find():
+    if request.method == "GET":
+        return render_template("find.html")
+
+    name = request.form.get("name")
+    if name:
+        name = '%' + name + '%'
+    email = request.form.get("email")
+    if email:
+        email = '%' + email + '%'
+
+    rows = []
+
+    if not email:
+        rows = db.execute("SELECT * FROM informations WHERE name LIKE ?", name)
+    if not name:
+        rows = db.execute("SELECT * FROM informations WHERE email LIKE ?", email)
+    if name and email:
+        rows = db.execute("SELECT * FROM informations WHERE name LIKE ? AND email LIKE ?", name, email)
+
+    if len(rows) == 0:
+        message = 'Not found!'
+        return render_template("find.html", message=message)
+
+    people = []
+    for row in rows:
+        person = {}
+        person['name'] = row['name']
+        person['email'] = row['email']
+        person['birth'] = row['birth']
+        person['place'] = row['place']
+        person['number'] = row['number']
+        people.append(person)
+    return render_template("find.html", people=people)
