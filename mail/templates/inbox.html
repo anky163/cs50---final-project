@@ -6,44 +6,48 @@
 
 {% block attribute %}
 <style>
-    h1 {
+     h1 {
         text-align: center;
         color: red;
     }
 
     h6 {
-        text-align: center;
-        color: rgb(255, 0, 170);
+        color: rgb(255, 0, 64);
     }
 
     #sent {
         margin:auto;
-        border: 1px gray dashed;
+        border: 1px gray solid;
+        border-top: none;
         border-bottom: none;
         width: 50%;
+        max-height: fit-content;
     }
 
     #sent div {
-        border-bottom: 1px gray dashed;
+        border-bottom: 1px gray solid;
     }
 
-    #sent #mail {
-        word-wrap: break-word;
-        overflow-y: scroll;
-        max-height: 200px;
-    }
 
     #mail-sender {
         text-align: center;
         font-weight: bold;
-        color: red;
+        color: blue;
     }
 
-    #content {
+    #paragraph {
         text-align: left;
         font-weight: bold;
         font-size: large;
         padding: 10px;
+        width: 100%;
+        height: 150px;
+        border: 1px gray solid;
+    }
+
+    #mail {
+        height: 120px;
+        width: 600px;
     }
 
     #search {
@@ -51,7 +55,7 @@
     }
 
     #search div input {
-        width: 240px;
+        width: 245px;
     }
 </style>
 {% endblock %}
@@ -70,7 +74,7 @@
         <div><input autofocus id="sender_email" name="sender_email" placeholder="name@example.com" type="text"></div>
         <h6>{{ email }}</h6>
         <br>
-        <div><input autofocus id="date" name="date" type="date"></div>  
+        <div><input autofocus id="date" name="date" type="text" placeholder="yyyy-mm-dd / yyyy-mm / yyyy"></div>  
         <h6>{{ date }}</h6>
         <br>    
         <button class="btn btn-primary" type="submit">Search</button>
@@ -82,7 +86,7 @@
 {% for mail in mails %}
 <div id="sent">
     <div><p id="mail-sender">{{ mail['sender'] }} <br> {{ mail['email'] }} <br> {{ mail['date'] }}</p></div>
-    <div id="mail"><p id="content">{{ mail['mail'] }}</p></div>
+    <textarea id="paragraph" disabled>{{ mail['mail'] }}</textarea>
 </div>
 {% endfor %}
 

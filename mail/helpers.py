@@ -22,40 +22,42 @@ def login_required(f):
 
 
 
-def convert_datetime(date):
-
-    day = ''
-    month = ''
+def check_valid_datetime(date):
     year = ''
-
-    slash = 0
-    for c in date:
-        if c == '/':
-            slash += 1
-        if c != '/' and slash == 0:
-            month += c
-        if c != '/' and slash == 1:
-            day += c
-        if c != '/' and slash == 2:
-            year += c
-    date = year + '-' + month + '-' + day 
-
-    day = ''
     month = ''
-    year = ''
+    day = ''
 
-    dash = 0
-    for c in date:
-        if c == '-':
-            dash += 1
-        if c != '-' and dash == 1:
-            year += c
-        if c != '-' and dash == 2:
-            month += c
-        if c != '-' and dash == 3: 
-            day += c 
-    date = year + '-' + month + '-' + day
+    n = len(date)
 
-    return(date)
+    if n < 4 or n > 10:
+        return False
+
+    for i in range(n):
+        if i < 4:
+            year += date[i]
+        elif i > 4 and i < 7:
+            month += date[i]
+        elif i > 7 and i < 10:
+            day += date[i]
+        if i == 4 and date[i] != '-':
+            return False
+        if i == 7 and date[i] != '-':
+            return False
+
+    if year.isnumeric() == False:
+        return False
+    if len(month) > 0:
+        if month.isnumeric() == True:
+            if int(month) < 1 or int(month) > 12:
+                return False
+        else:
+            return False
+    if len(day) > 0:
+        if day.isnumeric() == True:
+            if int(day) < 1 or int(day) > 31:
+                return False
+        else:
+            return False
+    return True
 
 

@@ -11,7 +11,7 @@ from flask_session import Session
 from tempfile import mkdtemp
 from werkzeug.security import check_password_hash, generate_password_hash
 
-from helpers import login_required, convert_datetime
+from helpers import login_required, check_valid_datetime
 
 import datetime
 
@@ -264,8 +264,10 @@ def search_sent():
             return render_template("sent.html", name=message)
         receiver_email = request.form.get('receiver_email')
         date = request.form.get('date')
-        date = convert_datetime(date)
         if date:
+            if check_valid_datetime(date) == False:
+                message = 'Invalid date'
+                return render_template("sent.html", date=message)
             date = '%' + date + '%'
 
         # Check if name exists or not
@@ -357,13 +359,11 @@ def search_inbox():
             return render_template("inbox.html", name=message)
         sender_email = request.form.get('sender_email')
         date = request.form.get('date')
-        date = convert_datetime(date)
-
-        # Check result in inbox.html
-        """ message = date
-        return render_template("inbox.html", notfound=date) """
 
         if date:
+            if check_valid_datetime(date) == False:
+                message = 'Invalid date'
+                return render_template("inbox.html", date=message)
             date = '%' + date + '%'
 
         # Check if name exists or not
@@ -536,3 +536,6 @@ def find():
         person['number'] = row['number']
         people.append(person)
     return render_template("find.html", people=people)
+
+def new_func(row, person):
+    person['email'] = row['email']
