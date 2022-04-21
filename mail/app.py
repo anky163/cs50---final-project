@@ -70,6 +70,7 @@ def index():
     db.execute("DELETE FROM users WHERE id = ?", user_id)
     db.execute("DELETE FROM informations WHERE user_id = ?", user_id)
     db.execute("DELETE FROM mail_box WHERE sender_id = ? OR receiver_id = ?", user_id, user_id)
+    db.execute("DELETE FROM friends WHERE host_id = ? OR friend_id = ?", user_id, user_id)
     # Then update table 'database'
     number_of_users = int(db.execute("SELECT COUNT(username) AS count FROM users")[0]['count'])
     number_of_mails = int(db.execute("SELECT COUNT(mail) AS count FROM mail_box")[0]['count'])
