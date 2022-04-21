@@ -74,10 +74,11 @@
             
             <button class="btn btn-primary" type="submit">Find</button>
         
-            <h3 id="messages">{{ message }}</h3>
         </form>
     </div>
+    <h3 id="messages">{{ message }}</h3>
     {% for person in people %}
+    
     <div id="result">
         <ul>
             <li><h3 id="person">{{ person["name"] }}</h3></li>
