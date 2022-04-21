@@ -30,7 +30,17 @@
 </script>
 {% endblock %}
 
+{% block attribute %}
+<style>
+    h2 {
+        text-align: center;
+        color: deeppink;
+    }
+</style>
+{% endblock %}
+
 {% block information %}
+<h2>{{ requirement }}</h2>
 
 <form class="row g-3 needs-validation" novalidate style="display: flex;" action="/information" method="post">
       

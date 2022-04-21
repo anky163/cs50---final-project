@@ -14,6 +14,6 @@ from helpers import login_required
 # Configure CS50 Library to use SQLite database
 db = SQL("sqlite:///mail.db")
 
-password = db.execute("SELECT hash FROM users WHERE id = ?", 21)[0]['hash']
-
-print(len(password))
+number_of_users = db.execute("SELECT COUNT(username) AS count FROM users")[0]['count']
+number_of_users = int(number_of_users)
+print(number_of_users)

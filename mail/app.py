@@ -39,6 +39,13 @@ def after_request(response):
     return response
 
 
+""" REQUIRE USER'S INFORMATION BEFORE ACCESSING ANY SITE
+def information_requirement():
+    user_id = session['user_id']
+    rows = db.execute("SELECT * FROM informations WHERE user_id = ?", user_id)
+    if len(rows) == 0:
+        message = 'You must provide you informations first!'
+        return render_template("information.html", requirement=message) """
 
 
 # INDEX
@@ -48,8 +55,13 @@ def after_request(response):
 def index():
     """Show portfolio of stocks"""
     if request.method == "GET":
+        # REQUIRE USER'S INFORMATION BEFORE ACCESSING ANY SITE
         user_id = session['user_id']
         rows = db.execute("SELECT * FROM informations WHERE user_id = ?", user_id)
+        if len(rows) == 0:
+            message = 'You must provide you informations first!'
+            return render_template("information.html", requirement=message)
+
         return render_template("index.html", rows=rows)
     
     # DELETE ACCOUNT
@@ -57,7 +69,11 @@ def index():
     db.execute("DELETE FROM users WHERE id = ?", user_id)
     db.execute("DELETE FROM informations WHERE user_id = ?", user_id)
     db.execute("DELETE FROM mail_box WHERE sender_id = ? OR receiver_id = ?", user_id, user_id)
-    db.execute("DELETE FROM friends WHERE friend_id = ?", user_id)
+    # Then update table 'database'
+    number_of_users = int(db.execute("SELECT COUNT(username) AS count FROM users")[0]['count'])
+    number_of_mails = int(db.execute("SELECT COUNT(mail) AS count FROM mail_box")[0]['count'])
+    db.execute("UPDATE database SET seq = ? WHERE name = 'users' OR name = 'informations'", number_of_users)
+    db.execute("UPDATE database SET seq = ? WHERE name = 'mail_box'", number_of_mails)
     
     # Turn to REGISTER
     return redirect("/login")
@@ -106,6 +122,7 @@ def login():
 
 @app.route("/logout")
 def logout():
+    
     """Log user out"""
 
     # Forget any user_id
@@ -142,6 +159,11 @@ def register():
         except:
             message = 'User already exists!'
             return render_template("register.html", message1=message)
+
+        # Update table 'database'
+        number_of_users = db.execute("SELECT COUNT(username) AS count FROM users")[0]['count']
+        number_of_users = int(number_of_users)
+        db.execute("UPDATE database SET seq = ? WHERE name = 'users' OR name = 'informations'", number_of_users)
 
         # Redirect to homepage
         return render_template("login.html")
@@ -202,9 +224,19 @@ def sent():
         date = datetime.datetime.now()
 
         db.execute("INSERT INTO mail_box (sender_id, receiver_id, sender, receiver, date, mail) VALUES (?, ?, ?, ?, ?, ?)", sender_id, receiver_id, sender, receiver, date, mail)
+        number_of_mails = db.execute("SELECT COUNT(mail) AS count FROM mail_box")[0]['count']
+        number_of_mails = int(number_of_mails) 
+        db.execute("UPDATE database SET seq = ? WHERE name = 'mail_box'", number_of_mails)
         return redirect("/sent")
 
+
+    # REQUIRE USER'S INFORMATION BEFORE ACCESSING ANY SITE
     user_id = session['user_id']
+    rows = db.execute("SELECT * FROM informations WHERE user_id = ?", user_id)
+    if len(rows) == 0:
+        message = 'You must provide you informations first!'
+        return render_template("information.html", requirement=message)
+
     rows = db.execute("SELECT * FROM mail_box WHERE sender_id = ? ORDER BY date DESC", user_id)
     mails = []
     for row in rows:
@@ -224,7 +256,14 @@ def sent():
 @app.route("/inbox")
 @login_required
 def inbox():
+
+    # REQUIRE USER'S INFORMATION BEFORE ACCESSING ANY SITE
     user_id = session['user_id']
+    rows = db.execute("SELECT * FROM informations WHERE user_id = ?", user_id)
+    if len(rows) == 0:
+        message = 'You must provide you informations first!'
+        return render_template("information.html", requirement=message)
+
     rows = db.execute("SELECT * FROM mail_box WHERE receiver_id = ? ORDER BY date DESC", user_id)
     mails = []
     for row in rows:
@@ -281,6 +320,12 @@ def information():
 @app.route("/change_information")
 @login_required
 def change_information():
+    # REQUIRE USER'S INFORMATION BEFORE ACCESSING ANY SITE
+    user_id = session['user_id']
+    rows = db.execute("SELECT * FROM informations WHERE user_id = ?", user_id)
+    if len(rows) == 0:
+        message = 'You must provide you informations first!'
+        return render_template("information.html", requirement=message)
     return render_template("information.html")
 
 
@@ -289,7 +334,14 @@ def change_information():
 @app.route("/change_password", methods=["GET", "POST"])
 @login_required
 def change_password():
+    
     if request.method == "GET":
+        # REQUIRE USER'S INFORMATION BEFORE ACCESSING ANY SITE
+        user_id = session['user_id']
+        rows = db.execute("SELECT * FROM informations WHERE user_id = ?", user_id)
+        if len(rows) == 0:
+            message = 'You must provide you informations first!'
+            return render_template("information.html", requirement=message)
         return render_template("change_password.html")
 
     oldPassword = request.form.get('oldPassword')
