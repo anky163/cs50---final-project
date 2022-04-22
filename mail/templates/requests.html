@@ -1,7 +1,7 @@
 {% extends "layout.html" %}
 
 {% block title %}
-    Find people
+    Friend requests
 {% endblock %}
 
 {% block script %}
@@ -27,9 +27,9 @@
 
 {% block attribute %}
 <style>
-
     h2 {
-        color: blue;
+        text-align: center;
+        color: green;
     }
 
     #message {
@@ -82,10 +82,13 @@
 </style>
 {% endblock %}
 
+{% block list %}{% endblock %}
+
 {% block main %}
+
 <div id="parent">
     <div id="find">
-        <form action="/find" method="post">
+        <form action="/requests" method="post">
             <div class="mb-3">
                 <input autofocus class="form-control mx-auto w-auto" id="name" name="name" placeholder="Name" type="text">
             </div>
@@ -98,15 +101,14 @@
         
         </form>
     </div>
-    
+    <h3 id="message">{{ message }}</h3>
     <h3>{{ name }}</h3> <!--Usage for checking input/output-->
     <h3>{{ email }}</h3> <!--Usage for checking input/output-->
 
-    <h2>Find someone you know</h2>
-    <h3 id="message">{{ message }}</h3>
+    <h2>Requests</h2>
     {% for person in people %}  
     <div id="result">
-        <form action="/add" method="post">
+        <form action="/accept" method="post">
             <ul>
                 <li><textarea id="person" name="name" readonly>{{ person["name"] }}</textarea></li>
                 <li><textarea id="person-email" name="email" readonly>{{ person["email"] }}</textarea></li>

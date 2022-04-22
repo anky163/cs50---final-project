@@ -12,9 +12,9 @@
             const name = document.querySelector('#name').value;
             const email = document.querySelector('#email').value;
 
-            if (name.length === 0 && email.length === 0)
+            if (name.length === 0)
             {
-                alert('Must provide atleast Name or Email required!');
+                alert('Must provide Name!');
                 return false;
             }
             // submit
@@ -88,7 +88,7 @@
 
 <div id="parent">
     <div id="find">
-        <form action="/find" method="post">
+        <form action="/list" method="post">
             <div class="mb-3">
                 <input autofocus class="form-control mx-auto w-auto" id="name" name="name" placeholder="Name" type="text">
             </div>
@@ -97,15 +97,16 @@
                 <input class="form-control mx-auto w-auto" id="email" name="email" placeholder="example@email.com" type="text">
             </div>
             
-            <button class="btn btn-primary" type="submit">Find</button>
+            <button class="btn btn-primary" type="submit">Search</button>
         
         </form>
     </div>
-    <h3 id="message">{{ message }}</h3>
+    
     <h3>{{ name }}</h3> <!--Usage for checking input/output-->
     <h3>{{ email }}</h3> <!--Usage for checking input/output-->
 
     <h2>Your friends</h2>
+    <h3 id="message">{{ message }}</h3>
     {% for person in people %}  
     <div id="result">
         <form action="/add" method="post">

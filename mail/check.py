@@ -12,8 +12,15 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from helpers import login_required
 
 
+
 # Configure CS50 Library to use SQLite database
 db = SQL("sqlite:///mail.db")
 
-row = db.execute("SELECT * FROM friends WHERE host_id = ? AND friend_id = ?", 20, 21)
-print(len(row))
+user_id = 33
+name = '%k%'
+string = f"SELECT user_id FROM informations WHERE name LIKE ?"
+print(string)
+
+
+rows = db.execute("SELECT * FROM informations JOIN friends ON user_id = host_id OR user_id = friend_id WHERE host_id = ? AND friend_id IN (SELECT user_id FROM informations WHERE name LIKE ?) OR host_id IN (SELECT user_id FROM informations WHERE name LIKE ?) AND friend_id = ?", user_id, name, name, user_id)
+print(rows)

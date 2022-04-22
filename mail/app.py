@@ -494,6 +494,7 @@ def change_password():
 def find():
     if request.method == "GET":
         user_id = session['user_id']
+
         rows = db.execute("SELECT * FROM informations WHERE NOT user_id = ? ORDER BY name", user_id)
 
         people = []
@@ -506,125 +507,213 @@ def find():
             person['birth'] = row['birth']
             person['place'] = row['place']
             person['number'] = row['number']
+          
+            person_id = db.execute("SELECT user_id FROM informations WHERE email = ?", person['email'])[0]['user_id']
 
-            user_id = session['user_id']
-            friend_id = db.execute("SELECT user_id FROM informations WHERE email = ?", person['email'])[0]['user_id']
-            row = db.execute("SELECT * FROM friends WHERE host_id = ? AND friend_id = ?", user_id, friend_id)
+            row = db.execute("SELECT * FROM friends WHERE host_id = ? AND friend_id = ? OR host_id = ? AND friend_id = ?", user_id, person_id, person_id, user_id)
             if len(row) == 0:
                 person['operation'] = 'Add friend'
             else:
-                person['operation'] = 'Unfriend'
+                # Accept request || Cancel request || Unfriend
+
+                if row[0]['status'] == 'unconfirmed':
+                    # If person is host
+                    if user_id == row[0]['friend_id']:
+                        person['operation'] = 'Accept'
+                    # If user is host
+                    if user_id == row[0]['host_id']:
+                        person['operation'] = 'Cancel request'
+                elif row[0]['status'] == 'confirmed':
+                    person['operation'] = 'Unfriend'
 
             people.append(person)
-
         return render_template("find.html", people=people)
 
+    
+    # Find people
+    user_id = session['user_id']
     name = request.form.get("name")
-    if name:
-        name = '%' + name + '%'
     email = request.form.get("email")
-    if email:
-        email = '%' + email + '%'
+
+    name = '%' + name + '%'
+    email = '%' + email + '%'
 
     rows = []
-
-    if not email:
-        rows = db.execute("SELECT * FROM informations WHERE name LIKE ?", name)
     if not name:
-        rows = db.execute("SELECT * FROM informations WHERE email LIKE ?", email)
+        rows = db.execute("SELECT * FROM informations WHERE email LIKE ? ORDER BY name", email)
+    if not email:
+        rows = db.execute("SELECT * FROM informations WHERE name LIKE ? ORDER BY name", name)
     if name and email:
-        rows = db.execute("SELECT * FROM informations WHERE name LIKE ? AND email LIKE ?", name, email)
+        rows = db.execute("SELECT * FROM informations WHERE name LIKE ? AND email LIKE ? ORDER BY name", name, email)
 
     if len(rows) == 0:
         message = 'Not found!'
         return render_template("find.html", message=message)
 
     people = []
-
     for row in rows:
         person = {}
-
         person['name'] = row['name']
         person['email'] = row['email']
         person['birth'] = row['birth']
         person['place'] = row['place']
         person['number'] = row['number']
 
-        user_id = session['user_id']
-        friend_id = db.execute("SELECT user_id FROM informations WHERE email = ?", person['email'])[0]['user_id']
-        row = db.execute("SELECT * FROM friends WHERE host_id = ? AND friend_id = ?", user_id, friend_id)
+        person_id = db.execute("SELECT user_id FROM informations WHERE email = ?", person['email'])[0]['user_id']
+
+        row = db.execute("SELECT * FROM friends WHERE host_id = ? AND friend_id = ? OR host_id = ? AND friend_id = ?", user_id, person_id, person_id, user_id)
         if len(row) == 0:
             person['operation'] = 'Add friend'
         else:
-            person['operation'] = 'Unfriend'
+            # Accept request || Cancel request || Unfriend
+            if row[0]['status'] == 'unconfirmed':
+                # If person is host
+                if user_id == row[0]['friend_id']:
+                    person['operation'] = 'Accept'
+                # If user is host
+                if user_id == row[0]['host_id']:
+                    person['operation'] = 'Cancel request'
+            elif row[0]['status'] == 'confirmed':
+                person['operation'] = 'Unfriend'
 
         people.append(person)
-
     return render_template("find.html", people=people)
 
-def new_func(row, person):
-    person['email'] = row['email']
 
 
 # ADD FRIEND
 @app.route("/add", methods=["POST"])
 @login_required
 def add():
+    user_id = session['user_id']
     name = request.form.get("name")
     email = request.form.get("email")
- 
-    """# Check input/output
-    return render_template("find.html", name=name, email=email)"""
 
-    user_id = session['user_id']
-    friend_id = db.execute("SELECT user_id FROM informations WHERE name = ? AND email = ?", name, email)[0]['user_id']
+    person_id = db.execute("SELECT user_id FROM informations WHERE email = ?", email)[0]['user_id']
 
-    # UPDATE table friends
-    row = db.execute("SELECT * FROM friends WHERE host_id = ? AND friend_id = ?", user_id, friend_id)
-    # If add friend
+    row = db.execute("SELECT * FROM friends WHERE host_id = ? AND friend_id = ? OR host_id = ? AND friend_id = ?", user_id, person_id, person_id, user_id)
+
+    # Add friend
     if len(row) == 0:
-        db.execute("INSERT INTO friends (host_id, friend_id) VALUES (?, ?)", user_id, friend_id)
-    # If unfriend
-    else:
-        db.execute("DELETE FROM friends WHERE host_id = ? AND friend_id = ?", user_id, friend_id)
+        db.execute("INSERT INTO friends (host_id, friend_id, status) VALUES (?, ?, ?)", user_id, person_id, 'unconfirmed')
+        return redirect("/list")
 
-    number_of_friend_couples = int(db.execute("SELECT COUNT(id) AS count FROM friends ")[0]['count'])
-    db.execute("UPDATE database SET seq = ? WHERE name = 'friends'", number_of_friend_couples)
+    # Accept request
+    if user_id == row[0]['friend_id']:
+        if row[0]['status'] == 'unconfirmed':
+            db.execute("UPDATE friends SET status = ? WHERE host_id = ? AND friend_id = ?", 'confirmed', person_id, user_id)
+
+    # Cancel request
+    if user_id == row[0]['host_id']:
+        if row[0]['status'] == 'unconfirmed':
+            db.execute("DELETE FROM friends WHERE host_id = ? AND friend_id = ?", user_id, person_id)
+
+    # Unfriend
+    if row[0]['status'] == 'confirmed':
+        db.execute("DELETE FROM friends WHERE host_id = ? AND friend_id = ? OR host_id = ? AND friend_id = ?", user_id, person_id, person_id, user_id)
 
     return redirect("/list")
-
 
 # FRIEND LIST
 @app.route("/list", methods=["GET", "POST"])
 @login_required
 @information_required
 def list():
+    user_id = session['user_id']
     if request.method == "GET":
-
-        user_id = session['user_id']
-        rows = db.execute("SELECT * FROM informations JOIN friends ON informations.user_id = friends.friend_id WHERE friends.host_id = ? ORDER BY name", user_id)
+        # Select people that are friends, OR unapprove friends, OR people sent requests
+        rows = db.execute("SELECT * FROM informations JOIN friends ON user_id = host_id OR user_id = friend_id WHERE host_id = ? OR friend_id = ?", user_id, user_id)
 
         people = []
 
         for row in rows:
-            person = {}
+            if user_id != row['user_id']:
+                person = {}
+                person['name'] = row['name']
+                person['email'] = row['email']
+                person['birth'] = row['birth']
+                person['place'] = row['place']
+                person['number'] = row['number']
 
+                # If already friends
+                if row['status'] == 'confirmed':
+                    person['operation'] = 'Unfriend'
+
+                # If unapprove friends
+                if user_id == row['host_id'] and row['status'] == 'unconfirmed':
+                    person['operation'] = 'Cancel request'
+
+                # If that person is the one who sent request
+                if user_id == row['friend_id'] and row['status'] == 'unconfirmed':
+                    person['operation'] = 'Accept'
+
+                people.append(person)
+        return render_template("list.html", people=people)
+
+    
+    # Query friend list
+    name = request.form.get("name")
+    email = request.form.get("email")
+    name = '%' + name + '%'
+    if email:
+        email = '%' + email + '%'
+    rows = []
+
+    if not email:
+        rows = db.execute("SELECT user_id FROM informations WHERE name LIKE ?", name)
+
+    if email:
+        rows = db.execute("SELECT user_id FROM informations WHERE name LIKE ? AND email LIKE ?", name, email)
+
+    if len(rows) == 0:
+        message = 'Not found!'
+        return render_template("list.html", message=message)
+
+    # Check if that person in friend list or not
+
+    if not email:
+        rows = db.execute("SELECT * FROM informations JOIN friends ON user_id = host_id OR user_id = friend_id WHERE host_id = ? AND friend_id IN (SELECT user_id FROM informations WHERE name LIKE ?) OR host_id IN (SELECT user_id FROM informations WHERE name LIKE ?) AND friend_id = ?", user_id, name, name, user_id)
+
+    if email:
+        rows = db.execute("SELECT * FROM informations JOIN friends ON user_id = host_id OR user_id = friend_id WHERE host_id = ? AND friend_id IN (SELECT user_id FROM informations WHERE name LIKE ? AND email LIKE ?) OR host_id IN (SELECT user_id FROM informations WHERE name LIKE ? AND email LIKE ?) AND friend_id = ?", user_id, name, email, name, email, user_id)
+
+    if len(rows) == 0:
+        message = 'Not found!'
+        return render_template("list.html", message=message)
+
+    people = []
+    for row in rows:
+        if user_id != row['user_id']:
+            person = {}
             person['name'] = row['name']
             person['email'] = row['email']
             person['birth'] = row['birth']
             person['place'] = row['place']
             person['number'] = row['number']
 
-            user_id = session['user_id']
-            friend_id = db.execute("SELECT user_id FROM informations WHERE email = ?", person['email'])[0]['user_id']
-            row = db.execute("SELECT * FROM friends WHERE host_id = ? AND friend_id = ?", user_id, friend_id)
-            if len(row) == 0:
-                person['operation'] = 'Add friend'
-            else:
+
+            # If already friends
+            if row['status'] == 'confirmed':
                 person['operation'] = 'Unfriend'
 
+            # If unapprove friends
+            if user_id == row['host_id'] and row['status'] == 'unconfirmed':
+                person['operation'] = 'Cancel request'
+
+            # If that person is the one who sent request
+            if user_id == row['friend_id'] and row['status'] == 'unconfirmed':
+                person['operation'] = 'Accept'
+
             people.append(person)
+    return render_template("list.html", people=people)
 
-        return render_template("list.html", people=people)
 
-    return redirect("/add")
+
+
+
+""" # FRIEND REQUESTS
+@app.route("/requests", methods=["GET", "POST"])
+@login_required
+@information_required
+def requests(): """
+
