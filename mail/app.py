@@ -40,17 +40,7 @@ def after_request(response):
     return response
 
 
-""" REQUIRE USER'S INFORMATION BEFORE ACCESSING ANY SITE
-def information_required():
-    user_id = session['user_id']
-    rows = db.execute("SELECT * FROM informations WHERE user_id = ?", user_id)
-    if len(rows) == 0:
-        message = 'You must provide you informations first!'
-        return render_template("information.html", requirement=message) """
-
-
 # INDEX
-
 @app.route("/", methods=["GET", "POST"])
 @login_required
 @information_required
@@ -69,21 +59,12 @@ def index():
     db.execute("DELETE FROM informations WHERE user_id = ?", user_id)
     db.execute("DELETE FROM mail_box WHERE sender_id = ? OR receiver_id = ?", user_id, user_id)
     db.execute("DELETE FROM friends WHERE host_id = ? OR friend_id = ?", user_id, user_id)
-    # Then update table 'database'
-    number_of_users = int(db.execute("SELECT COUNT(username) AS count FROM users")[0]['count'])
-    number_of_mails = int(db.execute("SELECT COUNT(mail) AS count FROM mail_box")[0]['count'])
-   
-    db.execute("UPDATE database SET seq = ? WHERE name = 'users' OR name = 'informations'", number_of_users)
-    db.execute("UPDATE database SET seq = ? WHERE name = 'mail_box'", number_of_mails)
-
-    
+  
     # Turn to REGISTER
     return redirect("/login")
 
 
-
 # LOG IN
-
 @app.route("/login", methods=["GET", "POST"])
 def login():
     """Log user in"""
@@ -121,7 +102,6 @@ def login():
 
 
 # LOG OUT
-
 @app.route("/logout")
 def logout():
     
@@ -137,7 +117,6 @@ def logout():
 
 
 # REGISTER
-
 @app.route("/register", methods=["GET", "POST"])
 def register():
     """Register user"""
@@ -162,11 +141,6 @@ def register():
             message = 'User already exists!'
             return render_template("register.html", message1=message)
 
-        # Update table 'database'
-        number_of_users = db.execute("SELECT COUNT(username) AS count FROM users")[0]['count']
-        number_of_users = int(number_of_users)
-        db.execute("UPDATE database SET seq = ? WHERE name = 'users' OR name = 'informations'", number_of_users)
-
         # Redirect to homepage
         return render_template("login.html")
 
@@ -175,7 +149,6 @@ def register():
 
 
 # SENDING EMAIL
-
 @app.route("/sent", methods=["GET", "POST"])
 @login_required
 @information_required
@@ -227,9 +200,7 @@ def sent():
         date = datetime.datetime.now()
 
         db.execute("INSERT INTO mail_box (sender_id, receiver_id, sender, receiver, date, mail) VALUES (?, ?, ?, ?, ?, ?)", sender_id, receiver_id, sender, receiver, date, mail)
-        number_of_mails = db.execute("SELECT COUNT(mail) AS count FROM mail_box")[0]['count']
-        number_of_mails = int(number_of_mails) 
-        db.execute("UPDATE database SET seq = ? WHERE name = 'mail_box'", number_of_mails)
+
         return redirect("/sent")
 
 
@@ -411,7 +382,6 @@ def search_inbox():
 
 
 # INFORMATION
-
 @app.route("/information", methods=["GET", "POST"])
 @login_required
 def information():
@@ -614,6 +584,7 @@ def add():
 
     return redirect("/list")
 
+
 # FRIEND LIST
 @app.route("/list", methods=["GET", "POST"])
 @login_required
@@ -622,7 +593,7 @@ def list():
     user_id = session['user_id']
     if request.method == "GET":
         # Select people that are friends, OR unapprove friends, OR people sent requests
-        rows = db.execute("SELECT * FROM informations JOIN friends ON user_id = host_id OR user_id = friend_id WHERE host_id = ? OR friend_id = ?", user_id, user_id)
+        rows = db.execute("SELECT * FROM informations JOIN friends ON user_id = host_id OR user_id = friend_id WHERE host_id = ? OR friend_id = ? ORDER BY friends.id DESC", user_id, user_id)
 
         people = []
 
@@ -633,13 +604,14 @@ def list():
                 person['email'] = row['email']
                 person['birth'] = row['birth']
                 person['place'] = row['place']
-                person['number'] = row['number']
+                person['number'] = row['number']               
 
                 # If already friends
                 if row['status'] == 'confirmed':
                     person['operation'] = 'Unfriend'
+                    person['button'] = 'Send mail'
 
-                # If unapprove friends
+                # If unapproved friends
                 if user_id == row['host_id'] and row['status'] == 'unconfirmed':
                     person['operation'] = 'Cancel request'
 
@@ -672,10 +644,10 @@ def list():
     # Check if that person in friend list or not
 
     if not email:
-        rows = db.execute("SELECT * FROM informations JOIN friends ON user_id = host_id OR user_id = friend_id WHERE host_id = ? AND friend_id IN (SELECT user_id FROM informations WHERE name LIKE ?) OR host_id IN (SELECT user_id FROM informations WHERE name LIKE ?) AND friend_id = ?", user_id, name, name, user_id)
+        rows = db.execute("SELECT * FROM informations JOIN friends ON user_id = host_id OR user_id = friend_id WHERE host_id = ? AND friend_id IN (SELECT user_id FROM informations WHERE name LIKE ?) OR host_id IN (SELECT user_id FROM informations WHERE name LIKE ?) AND friend_id = ? ORDER BY name, status", user_id, name, name, user_id)
 
     if email:
-        rows = db.execute("SELECT * FROM informations JOIN friends ON user_id = host_id OR user_id = friend_id WHERE host_id = ? AND friend_id IN (SELECT user_id FROM informations WHERE name LIKE ? AND email LIKE ?) OR host_id IN (SELECT user_id FROM informations WHERE name LIKE ? AND email LIKE ?) AND friend_id = ?", user_id, name, email, name, email, user_id)
+        rows = db.execute("SELECT * FROM informations JOIN friends ON user_id = host_id OR user_id = friend_id WHERE host_id = ? AND friend_id IN (SELECT user_id FROM informations WHERE name LIKE ? AND email LIKE ?) OR host_id IN (SELECT user_id FROM informations WHERE name LIKE ? AND email LIKE ?) AND friend_id = ? ORDER BY name, status", user_id, name, email, name, email, user_id)
 
     if len(rows) == 0:
         message = 'Not found!'
@@ -733,8 +705,7 @@ def requests():
         return render_template("requests.html", people=people)
 
     
-    # COPY from "/list"
-       # Query friend list
+    # Query friend list
     name = request.form.get("name")
     email = request.form.get("email")
     name = '%' + name + '%'
@@ -788,4 +759,3 @@ def requests():
 
         people.append(person)
     return render_template("list.html", people=people)
-

@@ -8,18 +8,20 @@
 <script>
     document.addEventListener('DOMContentLoaded', function() {
 
-        document.querySelector('form').onsubmit = function() {
+        document.querySelector('#search-form').onsubmit = function() {
             const name = document.querySelector('#name').value;
             const email = document.querySelector('#email').value;
-
+    
             if (name.length === 0)
             {
                 alert('Must provide Name!');
                 return false;
             }
+          
             // submit
             return true;
         }
+ 
     });
 </script>
 {% endblock %}
@@ -50,7 +52,7 @@
         padding-left: 30px;;
     }
 
-    #result {
+    .result {
         float: right;
         width: 75%;
         margin-right: 30px;
@@ -79,6 +81,10 @@
         font-weight: bold;
     }
 
+    .hidden {
+        display: none;
+    }
+
 </style>
 {% endblock %}
 
@@ -88,7 +94,7 @@
 
 <div id="parent">
     <div id="find">
-        <form action="/list" method="post">
+        <form id="search-form" action="/list" method="post">
             <div class="mb-3">
                 <input autofocus class="form-control mx-auto w-auto" id="name" name="name" placeholder="Name" type="text">
             </div>
@@ -108,7 +114,7 @@
     <h2>Your friends</h2>
     <h3 id="message">{{ message }}</h3>
     {% for person in people %}  
-    <div id="result">
+    <div class="result">
         <form action="/add" method="post">
             <ul>
                 <li><textarea id="person" name="name" readonly>{{ person["name"] }}</textarea></li>
@@ -122,10 +128,25 @@
                 {% if person["number"] %}
                 <li><h6>Number: {{ person["number"] }}</h6></li>
                 {% endif %}
-                <button type="submit">{{ person["operation"] }}</button>
+                <button id="upper-button" type="submit">{{ person["operation"] }}</button>
             </ul>
             <br>
         </form>
+
+        
+        <!--Send mail-->
+        <form action="/sent" method="post">
+            <ul>
+                <li><textarea class="hidden" name="name" readonly>{{ person["name"] }}</textarea></li>
+                <li><textarea class="hidden" name="email" readonly>{{ person["email"] }}</textarea></li>
+                {% if person["button"] %}
+                <button id="lower-button" type="submit">{{ person["button"] }}</button>
+                {% endif %}
+            </ul>
+            <br>
+        </form>
+    </div>
+
     </div>
     {% endfor %}
 </div>
