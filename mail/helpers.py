@@ -2,9 +2,13 @@ import os
 import requests
 import urllib.parse
 
-from flask import redirect, request, session
+from cs50 import SQL
+from flask import redirect, request, session, render_template
 from functools import wraps
 
+
+# Configure CS50 Library to use SQLite database
+db = SQL("sqlite:///mail.db")
 
 
 def login_required(f):
@@ -60,4 +64,18 @@ def check_valid_datetime(date):
             return False
     return True
 
+
+def information_required(f):
+
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        user_id = session.get("user_id")
+
+        rows = db.execute("SELECT * FROM informations WHERE user_id = ?", user_id)
+        if len(rows) == 0:
+            message = 'You must provide you informations first!'
+            return render_template("information.html", requirement=message) 
+
+        return f(*args, **kwargs)
+    return decorated_function
 

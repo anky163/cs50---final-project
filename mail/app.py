@@ -11,7 +11,7 @@ from flask_session import Session
 from tempfile import mkdtemp
 from werkzeug.security import check_password_hash, generate_password_hash
 
-from helpers import login_required, check_valid_datetime
+from helpers import login_required, check_valid_datetime, information_required
 
 import datetime
 
@@ -41,7 +41,7 @@ def after_request(response):
 
 
 """ REQUIRE USER'S INFORMATION BEFORE ACCESSING ANY SITE
-def information_requirement():
+def information_required():
     user_id = session['user_id']
     rows = db.execute("SELECT * FROM informations WHERE user_id = ?", user_id)
     if len(rows) == 0:
@@ -53,15 +53,13 @@ def information_requirement():
 
 @app.route("/", methods=["GET", "POST"])
 @login_required
+@information_required
 def index():
     """Show portfolio of stocks"""
     if request.method == "GET":
         # REQUIRE USER'S INFORMATION BEFORE ACCESSING ANY SITE
         user_id = session['user_id']
         rows = db.execute("SELECT * FROM informations WHERE user_id = ?", user_id)
-        if len(rows) == 0:
-            message = 'You must provide you informations first!'
-            return render_template("information.html", requirement=message)
 
         return render_template("index.html", rows=rows)
     
@@ -180,6 +178,7 @@ def register():
 
 @app.route("/sent", methods=["GET", "POST"])
 @login_required
+@information_required
 def sent():
     if request.method == "POST":
 
@@ -234,12 +233,7 @@ def sent():
         return redirect("/sent")
 
 
-    # REQUIRE USER'S INFORMATION BEFORE ACCESSING ANY SITE
     user_id = session['user_id']
-    rows = db.execute("SELECT * FROM informations WHERE user_id = ?", user_id)
-    if len(rows) == 0:
-        message = 'You must provide you informations first!'
-        return render_template("information.html", requirement=message)
 
     rows = db.execute("SELECT * FROM mail_box WHERE sender_id = ? ORDER BY date DESC", user_id)
     mails = []
@@ -326,14 +320,10 @@ def search_sent():
 
 @app.route("/inbox")
 @login_required
+@information_required
 def inbox():
 
-    # REQUIRE USER'S INFORMATION BEFORE ACCESSING ANY SITE
     user_id = session['user_id']
-    rows = db.execute("SELECT * FROM informations WHERE user_id = ?", user_id)
-    if len(rows) == 0:
-        message = 'You must provide you informations first!'
-        return render_template("information.html", requirement=message)
 
     rows = db.execute("SELECT * FROM mail_box WHERE receiver_id = ? ORDER BY date DESC", user_id)
     mails = []
@@ -351,6 +341,7 @@ def inbox():
 # SEARCH INBOX IN inbox.html
 @app.route("/search_inbox", methods=["GET", "POST"])
 @login_required
+@information_required
 def search_inbox():
     if request.method == "POST":
         user_id = session['user_id']
@@ -476,12 +467,6 @@ def change_information():
 def change_password():
     
     if request.method == "GET":
-        # REQUIRE USER'S INFORMATION BEFORE ACCESSING ANY SITE
-        user_id = session['user_id']
-        rows = db.execute("SELECT * FROM informations WHERE user_id = ?", user_id)
-        if len(rows) == 0:
-            message = 'You must provide you informations first!'
-            return render_template("information.html", requirement=message)
         return render_template("change_password.html")
 
     oldPassword = request.form.get('oldPassword')
@@ -505,6 +490,7 @@ def change_password():
 # FINDING PEOPLE
 @app.route("/find", methods = ["GET", "POST"])
 @login_required
+@information_required
 def find():
     if request.method == "GET":
         user_id = session['user_id']
@@ -611,8 +597,10 @@ def add():
 # FRIEND LIST
 @app.route("/list", methods=["GET", "POST"])
 @login_required
+@information_required
 def list():
     if request.method == "GET":
+
         user_id = session['user_id']
         rows = db.execute("SELECT * FROM informations JOIN friends ON informations.user_id = friends.friend_id WHERE friends.host_id = ? ORDER BY name", user_id)
 
