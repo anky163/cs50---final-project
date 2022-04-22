@@ -65,6 +65,19 @@
         border-bottom: 1px gray dashed;
     }
 
+    #send textarea {
+        width: 25%;
+        height:30px;
+        font-weight: bold;
+        
+    }
+
+    #send #mail {
+        width: 80%;
+        height: 200px;
+        font-weight:normal;
+    }
+
 
     #mail-receiver {
         text-align: center;
@@ -100,25 +113,24 @@
 
 
 
-{% block sent %}
+{% block sending %}
 <h2>Sending mail</h2>
 <div id="send">
-    <form action="/sent" method="post" id="send">
+    <form action="/sending" method="post" id="send">
         <div class="mb-3">
-            <input autofocus class="form-control w-auto" id="receiver" name="receiver" placeholder="Receiver's name" type="text">
+            <label>Friend</label>
+            <textarea class="form-control" id="receiver" name="receiver" readonly>{{ name }}</textarea>         
         </div>
-        <h6>{{ message1 }}</h6>
         <div class="mb-3">
-            <input class="form-control w-auto" id="email" name="email" placeholder="name@example.com" type="text">
+            <label>Friend's email</label>
+            <textarea class="form-control" id="email" name="email" readonly>{{ email }}</textarea>      
         </div>
-        <h6 id="message2">{{ message2 }}</h6>
         <div class="form-floating">
             <textarea class="form-control" id="mail" name="mail"></textarea>
             <label for="floatingMail" class="form-label">Content</label>
         </div>
         <br>
         <button class="btn btn-primary" type="submit">Send</button>
-        <h6 id="message4">{{ message4 }}</h6>
     </form>
 </div>
 <h1>From You to...</h1>
@@ -130,14 +142,14 @@
 <div>  
     <form action="/search_sent" method="post" id="search">
         
-        <div><input autofocus id="name" name="name" placeholder="Receiver's name" type="text"></div>
-        <h6>{{ name }}</h6>
+        <div><input id="name" name="name" placeholder="Receiver's name" type="text"></div>
+        <h6>{{ name_required }}</h6>
         <br>
-        <div><input autofocus id="receiver_email" name="receiver_email" placeholder="name@example.com" type="text"></div>
-        <h6>{{ email }}</h6>
+        <div><input id="receiver_email" name="receiver_email" placeholder="name@example.com" type="text"></div>
+   
         <br>
-        <div><input autofocus id="date" name="date" type="text" placeholder="yyyy-mm-dd / yyyy-mm / yyyy"></div> 
-        <h6>{{ date }}</h6>
+        <div><input id="date" name="date" type="text" placeholder="yyyy-mm-dd / yyyy-mm / yyyy"></div> 
+   
         <br>  
         <button class="btn btn-primary" type="submit">Search</button>  
     </form>

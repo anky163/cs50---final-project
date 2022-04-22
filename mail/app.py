@@ -148,77 +148,55 @@ def register():
 
 
 
-# SENDING EMAIL
-@app.route("/sent", methods=["GET", "POST"])
+# Provide input for sending.html
+@app.route("/send", methods=["POST"])
 @login_required
 @information_required
 def sent():
-    if request.method == "POST":
-
-        # Find friend
-        receiver = request.form.get("receiver")
-
-        user_names = db.execute("SELECT name FROM informations")
-        names = []
-        for row in user_names:
-            names.append(row['name'])
-        if receiver not in names:
-            message = 'Name does not exist!'
-            return render_template("sent.html", message1=message)
-        
-        email = request.form.get("email")
-
-        user_emails = db.execute("SELECT email FROM informations")
-        emails = []
-        for row in user_emails:
-            emails.append(row['email'])
-        if email not in emails:
-            message = 'Email does not exist!'
-            return render_template("sent.html", message2=message)
-
-        mail = request.form.get("mail")
-
-        # IF NAME AND EMAIL DON'T MATCH
-        receiver_emails = db.execute("SELECT email FROM informations WHERE name = ?", receiver)
-        emails = []
-        for row in receiver_emails:
-            emails.append(row['email'])
-        if email not in emails:
-            message = "Name and Email don't match!"
-            return render_template("sent.html", message2=message)
-
-        # IF user mails for themselves:
-        sender_id = session['user_id']
-        sender_email = db.execute("SELECT email FROM informations WHERE user_id = ?", sender_id)[0]['email']
-        if email == sender_email:
-            message = "You cannot mail for yourself!"
-            return render_template("sent.html", message4=message)
-
-        receiver_id = db.execute("SELECT user_id FROM informations WHERE email = ?", email)[0]['user_id']
-        sender = db.execute("SELECT name FROM informations WHERE user_id = ?", sender_id)[0]['name']
-        receiver = db.execute("SELECT name FROM informations WHERE user_id = ?", receiver_id)[0]['name']
-        date = datetime.datetime.now()
-
-        db.execute("INSERT INTO mail_box (sender_id, receiver_id, sender, receiver, date, mail) VALUES (?, ?, ?, ?, ?, ?)", sender_id, receiver_id, sender, receiver, date, mail)
-
-        return redirect("/sent")
+    name = request.form.get("name")
+    email = request.form.get("email")
+    return render_template("sending.html", name=name, email=email)
 
 
+# SENDING MAIL
+@app.route("/sending", methods=["GET", "POST"])
+@login_required
+@information_required
+def sending():
     user_id = session['user_id']
+    if request.method == "GET":
+        # Query all the mails that users sent
+        rows = db.execute("SELECT * FROM mail_box WHERE sender_id = ?", user_id)
+        mails = []
+        for row in rows:
+            mail = {}
+            mail['receiver'] = row['receiver']
+            receiver_id = row['receiver_id']
+            receiver_email = db.execute("SELECT email FROM informations WHERE user_id = ?", receiver_id)[0]['email']
+            mail['email'] = receiver_email
+            mail['date'] = row['date']
+            mail['mail'] = row['mail']
 
-    rows = db.execute("SELECT * FROM mail_box WHERE sender_id = ? ORDER BY date DESC", user_id)
-    mails = []
-    for row in rows:
-        mail = {}
-        mail['receiver'] = row['receiver']
-        receiver_id = row['receiver_id']
-        mail['email'] = db.execute("SELECT email FROM informations WHERE user_id = ?", receiver_id)[0]['email']
-        mail['mail'] = row['mail']
-        mail['date'] = row['date']
-        mails.append(mail)
-    return render_template("sent.html", mails=mails)
+            mails.append(mail)
+        return render_template("sending.html", mails=mails)
+    
+    name = request.form.get("receiver")
+    email = request.form.get("email")
+    mail = request.form.get("mail")
 
-# SEARCH SENT MAILS IN sent.html
+    # Update mail_box
+    sender = db.execute("SELECT name FROM informations WHERE user_id = ?", user_id)[0]['name']
+    sender_id = user_id
+    receiver = name
+    receiver_id = db.execute("SELECT user_id FROM informations WHERE email = ?", email)[0]['user_id']
+    date = datetime.datetime.now()
+    db.execute("INSERT INTO mail_box (sender, sender_id, receiver, receiver_id, date, mail) VALUES (?, ?, ?, ?, ?, ?)", sender, sender_id, receiver, receiver_id, date, mail)
+
+    return redirect("/sending")
+
+
+
+# SEARCH SENT MAILS IN sending.html
 @app.route("/search_sent", methods=["GET", "POST"])
 @login_required
 def search_sent():
@@ -229,51 +207,32 @@ def search_sent():
         name = request.form.get('name')
         if not name:
             message = "Name required!"
-            return render_template("sent.html", name=message)
+            return render_template("sending.html", name_required=message)
+        name = '%' + name + '%'
+
         receiver_email = request.form.get('receiver_email')
+        if receiver_email:
+            receiver_email = '%' + receiver_email + '%'
+
         date = request.form.get('date')
         if date:
             if check_valid_datetime(date) == False:
                 message = 'Invalid date'
-                return render_template("sent.html", date=message)
+                return render_template("sending.html", date=message)
             date = '%' + date + '%'
 
-        # Check if name exists or not
-        user_names = db.execute("SELECT name FROM informations")
-        names = []
-        for row in user_names:
-            names.append(row['name'])
-        if name not in names:
-            message = 'Name does not exist!'
-            return render_template("sent.html", name=message)
-        
-
-        # If user did input receiver's email
-        if receiver_email:
-            email = db.execute("SELECT email FROM informations WHERE name = ? AND email = ?", name, receiver_email)
-            # If name and email do not match
-            if len(email) == 0:
-                message = "Name and Email don't match!"
-                return render_template("sent.html", email=message)
-            receiver_id = db.execute("SELECT user_id FROM informations WHERE email = ?", receiver_email)[0]['user_id']
-            if not date:
-                rows = db.execute("SELECT * FROM mail_box WHERE sender_id = ? AND receiver = ? AND receiver_id = ? ORDER BY date DESC", user_id, name, receiver_id)
-            else: 
-                rows = db.execute("SELECT * FROM mail_box WHERE sender_id = ? AND receiver = ? AND receiver_id = ? AND date LIKE ? ORDER BY date DESC", user_id, name, receiver_id, date)
-        # If user did not input receiver's email
-        else:
-            if date:
-                rows = db.execute("SELECT * FROM mail_box WHERE sender_id = ? AND receiver = ? AND date LIKE ? ORDER BY date DESC", user_id, name, date)
-
-  
-        # If user only type receiver's name
         if not receiver_email and not date:
-            rows = db.execute("SELECT * FROM mail_box WHERE sender_id = ? AND receiver = ? ORDER BY date DESC", user_id, name)
+            rows = db.execute("SELECT * FROM mail_box WHERE sender_id = ? AND receiver LIKE ?", user_id, name)
+        elif receiver_email and not date:
+            rows = db.execute("SELECT * FROM mail_box WHERE sender_id = ? AND receiver LIKE ? AND receiver_id IN (SELECT user_id FROM informations WHERE email LIKE ?)", user_id, name, receiver_email)
+        else:
+            rows = db.execute("SELECT * FROM mail_box WHERE sender_id = ? AND receiver LIKE ? AND receiver_id IN (SELECT user_id FROM informations WHERE email LIKE ?) AND date LIKE ?", user_id, name, receiver_email, date)
 
         if len(rows) == 0:
-            message = "Not found!"
-            return render_template("sent.html", notfound=message)
+            message = 'Not found!'
+            return render_template("sending.html", notfound=message)
 
+              
         mails = []
         for row in rows:
             mail = {}
@@ -283,8 +242,8 @@ def search_sent():
             mail['mail'] = row['mail']
             mail['date'] = row['date']
             mails.append(mail)
-        return render_template("sent.html", mails=mails)
-    return redirect("/sent")
+        return render_template("sending.html", mails=mails)
+    return redirect("/sending")
 
 
 # CHECK INBOX
@@ -322,7 +281,12 @@ def search_inbox():
         if not name:
             message = "Name required!"
             return render_template("inbox.html", name=message)
+        name = '%' + name + '%'
+
         sender_email = request.form.get('sender_email')
+        if sender_email: 
+            sender_email = '%' + sender_email + '%'
+
         date = request.form.get('date')
 
         if date:
@@ -331,38 +295,13 @@ def search_inbox():
                 return render_template("inbox.html", date=message)
             date = '%' + date + '%'
 
-        # Check if name exists or not
-        user_names = db.execute("SELECT name FROM informations")
-        names = []
-        for row in user_names:
-            names.append(row['name'])
-        if name not in names:
-            message = 'Name does not exist!'
-            return render_template("inbox.html", name=message)
-        
-
-        # If user did input receiver's email
-        if sender_email:
-            email = db.execute("SELECT email FROM informations WHERE name = ? AND email = ?", name, sender_email)
-            # If name and email do not match
-            if len(email) == 0:
-                message = "Name and Email don't match!"
-                return render_template("inbox.html", email=message)
-            sender_id = db.execute("SELECT user_id FROM informations WHERE email = ?", sender_email)[0]['user_id']
-            if not date:
-                rows = db.execute("SELECT * FROM mail_box WHERE receiver_id = ? AND sender = ? AND sender_id = ? ORDER BY date DESC", user_id, name, sender_id)
-            else: 
-                rows = db.execute("SELECT * FROM mail_box WHERE receiver_id = ? AND sender = ? AND sender_id = ? AND date LIKE ? ORDER BY date DESC", user_id, name, sender_id, date)
-        # If user did not input receiver's email
-        else:
-            if date:
-                rows = db.execute("SELECT * FROM mail_box WHERE receiver_id = ? AND sender = ? AND date LIKE ? ORDER BY date DESC", user_id, name, date)
-
-  
-        # If user only type receiver's name
         if not sender_email and not date:
-            rows = db.execute("SELECT * FROM mail_box WHERE receiver_id = ? AND sender = ? ORDER BY date DESC", user_id, name)
-
+            rows = db.execute("SELECT * FROM mail_box WHERE receiver_id = ? AND sender LIKE ?", user_id, name)
+        elif sender_email and not date:
+            rows = db.execute("SELECT * FROM mail_box WHERE receiver_id = ? AND sender LIKE ? AND sender_id IN (SELECT user_id FROM informations WHERE email LIKE ?)", user_id, name, sender_email)
+        else:
+            rows = db.execute("SELECT * FROM mail_box WHERE receiver_id = ? AND sender LIKE ? AND sender_id IN (SELECT user_id FROM informations WHERE email LIKE ?) AND date LIKE ?", user_id, name, sender_email, date)
+            
         if len(rows) == 0:
             message = "Not found!"
             return render_template("inbox.html", notfound=message)
@@ -667,6 +606,7 @@ def list():
             # If already friends
             if row['status'] == 'confirmed':
                 person['operation'] = 'Unfriend'
+                person['button'] = 'Send mail'
 
             # If unapprove friends
             if user_id == row['host_id'] and row['status'] == 'unconfirmed':
@@ -681,7 +621,7 @@ def list():
 
 
 
-# FRIEND REQUESTS
+# FRIEND REQUESTSS
 @app.route("/requests", methods=["GET", "POST"])
 @login_required
 @information_required
@@ -689,7 +629,7 @@ def requests():
     user_id = session['user_id']
     if request.method == "GET":
         # Select all people that sent requests to user BUT user has not accepted yet
-        rows = db.execute("SELECT * FROM informations JOIN friends ON user_id = host_id WHERE friend_id = ? AND status = ?", user_id, 'unconfirmed')
+        rows = db.execute("SELECT * FROM informations JOIN friends ON user_id = host_id WHERE friend_id = ? AND status = ? ORDER BY status, name DESC", user_id, 'unconfirmed')
         people = []
         for row in rows:
             person = {}
