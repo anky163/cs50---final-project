@@ -709,11 +709,83 @@ def list():
 
 
 
-
-
-""" # FRIEND REQUESTS
+# FRIEND REQUESTS
 @app.route("/requests", methods=["GET", "POST"])
 @login_required
 @information_required
-def requests(): """
+def requests():
+    user_id = session['user_id']
+    if request.method == "GET":
+        # Select all people that sent requests to user BUT user has not accepted yet
+        rows = db.execute("SELECT * FROM informations JOIN friends ON user_id = host_id WHERE friend_id = ? AND status = ?", user_id, 'unconfirmed')
+        people = []
+        for row in rows:
+            person = {}
+            person['name'] = row['name']
+            person['email'] = row['email']
+            person['birth'] = row['birth']
+            person['place'] = row['place']
+            person['number'] = row['number']
+            person['operation'] = 'Accept'
+
+            people.append(person)
+
+        return render_template("requests.html", people=people)
+
+    
+    # COPY from "/list"
+       # Query friend list
+    name = request.form.get("name")
+    email = request.form.get("email")
+    name = '%' + name + '%'
+    if email:
+        email = '%' + email + '%'
+    rows = []
+
+    if not email:
+        rows = db.execute("SELECT user_id FROM informations WHERE name LIKE ?", name)
+
+    if email:
+        rows = db.execute("SELECT user_id FROM informations WHERE name LIKE ? AND email LIKE ?", name, email)
+
+    if len(rows) == 0:
+        message = 'Not found!'
+        return render_template("list.html", message=message)
+
+    # Check if that person sent you request or not
+
+    if not email:
+        rows = db.execute("SELECT * FROM informations JOIN friends ON user_id = host_id WHERE host_id IN (SELECT user_id FROM informations WHERE name LIKE ?) AND friend_id = ? AND status = ?", name, user_id, 'unconfirmed')
+
+    if email:
+        rows = db.execute("SELECT * FROM informations JOIN friends ON user_id = host_id WHERE host_id IN (SELECT user_id FROM informations WHERE name LIKE ? AND email LIKE ?) AND friend_id = ? AND status = ?", name, email, user_id, 'unconfirmed')
+
+    if len(rows) == 0:
+        message = 'Not found!'
+        return render_template("list.html", message=message)
+
+    people = []
+    for row in rows:
+        person = {}
+        person['name'] = row['name']
+        person['email'] = row['email']
+        person['birth'] = row['birth']
+        person['place'] = row['place']
+        person['number'] = row['number']
+
+
+        # If already friends
+        if row['status'] == 'confirmed':
+            person['operation'] = 'Unfriend'
+
+        # If unapprove friends
+        if user_id == row['host_id'] and row['status'] == 'unconfirmed':
+            person['operation'] = 'Cancel request'
+
+        # If that person is the one who sent request
+        if user_id == row['friend_id'] and row['status'] == 'unconfirmed':
+            person['operation'] = 'Accept'
+
+        people.append(person)
+    return render_template("list.html", people=people)
 
