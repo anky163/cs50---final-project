@@ -54,16 +54,14 @@
 
     #sent {
         margin:auto;
-        border: 1px gray solid;
         border-top: none;
         border-bottom: none;
         width: 50%;
         max-height: fit-content;
+        box-shadow: rgba(0, 0, 0, 0.25) 0px 14px 28px, rgba(0, 0, 0, 0.22) 0px 10px 10px;
     }
 
-    #sent div {
-        border-bottom: 1px gray dashed;
-    }
+
 
     #send textarea {
         width: 25%;
@@ -84,6 +82,16 @@
         font-weight: bold;
         color: blue;
     }
+    p {
+        height: 10px;
+        font-weight: bold;
+    }
+
+    label {
+        color: blue;
+        font-weight: 500;
+    }
+
 
     #paragraph {
         text-align: left;
@@ -92,12 +100,19 @@
         padding: 10px;
         width: 100%;
         height: 150px;
-        border: 1px gray solid;
+        min-height: 50px;
+
+        border: none;
+        background: #E0EAFC;  /* fallback for old browsers */
+        background: -webkit-linear-gradient(to right, #CFDEF3, #E0EAFC);  /* Chrome 10-25, Safari 5.1-6 */
+        background: linear-gradient(to right, #CFDEF3, #E0EAFC); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
     }
 
     #mail {
         height: 120px;
         width: 600px;
+        font-weight: bolder;
+        font-size: large;
     }
 
     #search {
@@ -114,16 +129,16 @@
 
 
 {% block sending %}
-<h2>Sending mail</h2>
+<h2>{{ head }}</h2>
 <div id="send">
     <form action="/sending" method="post" id="send">
         <div class="mb-3">
             <label>Friend</label>
-            <textarea class="form-control" id="receiver" name="receiver" readonly>{{ name }}</textarea>         
+            <textarea class="form-control" id="receiver" name="receiver">{{ name }}</textarea>         
         </div>
         <div class="mb-3">
             <label>Friend's email</label>
-            <textarea class="form-control" id="email" name="email" readonly>{{ email }}</textarea>      
+            <textarea class="form-control" id="email" name="email">{{ email }}</textarea>      
         </div>
         <div class="form-floating">
             <textarea class="form-control" id="mail" name="mail"></textarea>
@@ -158,7 +173,7 @@
 <h4>{{ notfound }}</h4>
 {% for mail in mails %}
 <div id="sent">
-    <div><p id="mail-receiver">{{ mail['receiver'] }} <br> {{ mail['email'] }} <br> {{ mail['date'] }}</p></div>
+    <p id="mail-receiver">{{ mail['receiver'] }} </p> <p>{{ mail['email'] }}</p>  <p> {{ mail['date'] }}</p>
     <textarea id="paragraph" disabled>{{ mail['mail'] }}</textarea>
 </div>
 {% endfor %}

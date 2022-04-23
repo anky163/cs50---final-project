@@ -164,25 +164,38 @@ def sent():
 @information_required
 def sending():
     user_id = session['user_id']
-    if request.method == "GET":
-        # Query all the mails that users sent
-        rows = db.execute("SELECT * FROM mail_box WHERE sender_id = ?", user_id)
-        mails = []
-        for row in rows:
-            mail = {}
-            mail['receiver'] = row['receiver']
-            receiver_id = row['receiver_id']
-            receiver_email = db.execute("SELECT email FROM informations WHERE user_id = ?", receiver_id)[0]['email']
-            mail['email'] = receiver_email
-            mail['date'] = row['date']
-            mail['mail'] = row['mail']
+    # Query all the mails that users sent
+    rows = db.execute("SELECT * FROM mail_box WHERE sender_id = ? ORDER BY date DESC", user_id)
+    mails = []
+    for row in rows:
+        mail = {}
+        mail['receiver'] = row['receiver']
+        receiver_id = row['receiver_id']
+        receiver_email = db.execute("SELECT email FROM informations WHERE user_id = ?", receiver_id)[0]['email']
+        mail['email'] = receiver_email
+        mail['date'] = row['date']
+        mail['mail'] = row['mail']
 
-            mails.append(mail)
-        return render_template("sending.html", mails=mails)
+        mails.append(mail)
+    head = 'Send mail'
+    if request.method == "GET":
+        return render_template("sending.html", mails=mails, head=head)
     
     name = request.form.get("receiver")
     email = request.form.get("email")
     mail = request.form.get("mail")
+
+    receiver_id = db.execute("SELECT user_id FROM informations WHERE name = ? AND email = ?", name, email)
+    if len(receiver_id) == 0:
+        head = 'Friend not found!'
+        return render_template("sending.html", mails=mails, head=head)
+    receiver_id = receiver_id[0]['user_id']
+
+    # Check whether receiver is in friendlist or not
+    rows = db.execute("SELECT * FROM friends WHERE host_id = ? AND friend_id = ? AND status = ? OR host_id = ? AND friend_id = ? AND status = ?", user_id, receiver_id, 'confirmed', receiver_id, user_id, 'confirmed')
+    if len(rows) == 0:
+        head = 'Friend not found!'
+        return render_template("sending.html", mails=mails, head=head)
 
     # Update mail_box
     sender = db.execute("SELECT name FROM informations WHERE user_id = ?", user_id)[0]['name']
@@ -401,9 +414,9 @@ def change_password():
 @login_required
 @information_required
 def find():
+    user_id = session['user_id']
     if request.method == "GET":
-        user_id = session['user_id']
-
+       
         rows = db.execute("SELECT * FROM informations WHERE NOT user_id = ? ORDER BY name", user_id)
 
         people = []
@@ -440,7 +453,7 @@ def find():
 
     
     # Find people
-    user_id = session['user_id']
+
     name = request.form.get("name")
     email = request.form.get("email")
 

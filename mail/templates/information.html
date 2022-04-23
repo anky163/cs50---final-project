@@ -32,6 +32,11 @@
 
 {% block attribute %}
 <style>
+    h1 {
+        text-align: center;
+        color: green;
+    }
+
     h2 {
         text-align: center;
         color: deeppink;
@@ -40,8 +45,10 @@
 {% endblock %}
 
 {% block information %}
+<h1>Change your information</h1>
+<br>
 <h2>{{ requirement }}</h2>
-
+<br>
 <form class="row g-3 needs-validation" novalidate style="display: flex;" action="/information" method="post">
       
     <!--Name's field--> 

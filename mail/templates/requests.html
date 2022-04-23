@@ -27,7 +27,7 @@
 
 {% block attribute %}
 <style>
-    h2 {
+    h1 {
         text-align: center;
         color: green;
     }
@@ -55,7 +55,7 @@
         width: 75%;
         margin-right: 30px;
        
-        border: gray dashed thin;
+        box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
     }
 
     ul li {
@@ -82,7 +82,7 @@
 </style>
 {% endblock %}
 
-{% block list %}{% endblock %}
+{% block request %}<h1>Requests</h1>{% endblock %}
 
 {% block main %}
 
@@ -105,7 +105,7 @@
     <h3>{{ name }}</h3> <!--Usage for checking input/output-->
     <h3>{{ email }}</h3> <!--Usage for checking input/output-->
 
-    <h2>Requests</h2>
+    
     <h3 id="message">{{ message }}</h3>
     {% for person in people %}  
     <div id="result">

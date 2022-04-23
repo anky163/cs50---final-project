@@ -1,82 +1,55 @@
 <!DOCTYPE html>
+
 <html>
-<head>
-<style> 
-div.ex1 {
-  background-color: lightblue;
-  height: 100px;
-  width: 70%;
-  overflow-y: scroll;
-}
+  <head>
+    <title>Check</title>
+    <link href="check.css" rel="stylesheet">
 
-div.ex2 {
-  background-color: lightblue;
-  height: 40px;
-  width: 200px;  
-  overflow-y: hidden;
-}
+    <script>
+      document.addEventListener('DOMContenLoaded', function() {
+     
+          var str = '#len'; //increment by 1 up to 1-nelemnts
+          $(document).ready(function(){
+            var i, stop;
+            i = 1;
+            stop = 4; //num elements
+            setInterval(function(){
+              if (i > stop){
+                return;
+              }
+              $('#len'+(i++)).toggleClass('bounce');
+            }, 500)
+          });
 
-div.ex3 {
-  background-color: lightblue;
-  height: 200px;
-  width: 200px;  
-  overflow-y: auto;
-}
+      });
+    </script>
+  </head>
 
-div.ex4 {
-  background-color: lightblue;
-  height: 40px;
-  width: 200px;  
-  overflow-y: visible;
-}
-</style>
-</head>
-<body>
+  <body>
+    <div class="container-fluid">
+      <nav class="navbar navbar-inverse">
+        <div class="container-fluid">
+          <ul class="nav navbar-nav">
+            <li><a id="len1" class="hoverable" href="#">Home</a></li>
+            <li><a id="len2" class="hoverable" href="#">About</a></li>
+            <li><a id="len3" class="hoverable" href="#">Portfolio</a></li>
+            <li><a id="len4" class="hoverable" href="#">Contact</a></li>
+          </ul>
+        </div>
+      </nav>
+      <div id="what-the-hell-is-this">
+        <div class="page-title">
+          <h2>Simple Navigation</h2>
+          <p class="lead">
+            Based on Hover.css, the goal of this pen
+            is to create a simple navigation bar <br />
+            that can be easily reused in both mobile and native displays. Mouse over the nav text for animation!
+          </p>
+        </div>
+      </div>
+    </div>
+  </body>
 
-<h1>The overflow-y Property</h1>
-
-<p>The overflow-y property specifies whether to clip the content, add a scroll bar, or display overflow content of a block-level element, when it overflows at the top and bottom edges.</p>
-
-<h2>overflow-y: scroll:</h2>
-<div class="ex1">Lorem ipsum dolor sit amet, consectetur adipiscing elit. consectetur adipiscing elit. Etiam semper diam at erat pulvinar, 
-  at pulvinar felis blandit. Vestibulum volutpat tellus diam, consequat gravida libero rhon
-  cus ut.Lorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam semper diam at erat p
-  ulvinar, at pulvinar felis blandit. Vestibulum volutpat tellus diam, consequat gravida libero 
-  rhoncus ut.Lorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam semper diam at erat pu
-  lvinar, at pulvinar felis blandit. Vestibulum volutpat tellus diam, consequat consectetur adipiscing elit. Etiam semper diam at erat pulvinar, 
-  at pulvinar felis blandit. Vestibulum volutpat tellus diam, consequat gravida libero rhon
-  cus ut.Lorem m dolo
-    r sit amet, consecteturut.Lorem ipsum dolor sit ame
-    t, consectetur adipiscing elit. Etiam semper diam at erat pulvinar, at pulvinar felis blandit. V
-    estibulum volutpat tellus diam, consequat gravida libero rhoncus ut..</div>
-
-
-
-<h2>overflow-y: hidden:</h2>
-<div class="ex2">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam semper diam at erat pulvinar, at pulvinar felis blandit. Vestibulum volutpat tellus diam, consequat gravida libero rhoncus ut.</div>
-
-<h2>overflow-y: auto:</h2>
-<div class="ex3">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam semper diam at erat pulvinar,
-   at pulvinar felis blandit. Vestibulum volutpat tellus diam, consequat gravida libero rhoncus ut.
-   Lorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam semper diam at erat pulvinar,
-   at pulvinar felis blandit. Vestibulum volutpat tellus diam, consequat gravida libero rhoncus ut.Lorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam semper diam at erat pulvinar,
-   at pulvinar felis blandit. Vestibulum volutpat tellus diam, consequat gravida libero rhoncus ut.Lorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam semper diam at erat pulvinar,
-   at pulvinar felis blandit. Vestibulum volutpat tellus diam, consequat gravida libero rhoncus ut.Lorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam semper diam at erat pulvinar,
-   at pulvinar felis blandit. Vestibulum volutpat tellus diam, consequat gravida libero rhoncus ut.Lorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam semper diam at erat pulvinar,
-   at pulvinar felis blandit. Vestibulum volutpat tellus diam, consequat gravida libero rhoncus ut.Lorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam semper diam at erat pulvinar,
-   at pulvinar felis blandit. Vestibulum volutpat tellus diam, consequat gravida libero rhoncus ut.Lorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam semper diam at erat pulvinar,
-   at pulvinar felis blandit. Vestibulum volutpat tellus diam, consequat gravida libero rhoncus ut.Lorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam semper diam at erat pulvinar,
-   at pulvinar felis blandit. Vestibulum volutpat tellus diam, consequat gravida libero rhoncus ut.Lorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam semper diam at erat pulvinar,
-   at pulvinar felis blandit. Vestibulum volutpat tellus diam, consequat gravida libero rhoncus ut.Lorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam semper diam at erat pulvinar,
-   at pulvinar felis blandit. Vestibulum volutpat tellus diam, consequat gravida libero rhoncus ut.Lorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam semper diam at erat pulvinar,
-   at pulvinar felis blandit. Vestibulum volutpat tellus diam, consequat gravida libero rhoncus ut.Lorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam semper diam at erat pulvinar,
-   at pulvinar felis blandit. Vestibulum volutpat tellus diam, consequat gravida libero rhoncus ut.Lorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam semper diam at erat pulvinar,
-   at pulvinar felis blandit. Vestibulum volutpat tellus diam, consequat gravida libero rhoncus ut.Lorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam semper diam at erat pulvinar,
-   at pulvinar felis blandit. Vestibulum volutpat tellus diam, consequat gravida libero rhoncus ut.
-  </div>
-
-<h2>overflow-y: visible (default):</h2>
-<div class="ex4">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam semper diam at erat pulvinar, at pulvinar felis blandit. Vestibulum volutpat tellus diam, consequat gravida libero rhoncus ut.</div>
-
-</body>
 </html>
+
+

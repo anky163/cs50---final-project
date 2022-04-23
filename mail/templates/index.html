@@ -4,8 +4,32 @@
     Home
 {% endblock %}
 
+{% block attribute %}
+<style>
+
+    h1 {
+        color: green;
+    }
+
+    .table {
+        box-shadow: rgba(100, 100, 111, 0.2) 0px 7px 29px 0px;
+        
+    }
+
+    .table tr th {
+        color: blue;
+        font-size: larger;
+    }
+
+    .table tr td {
+        font-weight: bold;
+    }
+    
+</style>
+{% endblock %}
+
 {% block main %}
-    <h1>My home</h1>
+    <h1>Home page</h1>
     <table class="table">
         <tr>
             <th scope="col">Name</th>
