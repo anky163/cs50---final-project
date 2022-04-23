@@ -441,6 +441,7 @@ def find():
                 if row[0]['status'] == 'unconfirmed':
                     # If person is host
                     if user_id == row[0]['friend_id']:
+                        person['reject'] = 'Reject'
                         person['operation'] = 'Accept'
                     # If user is host
                     if user_id == row[0]['host_id']:
@@ -491,6 +492,7 @@ def find():
             if row[0]['status'] == 'unconfirmed':
                 # If person is host
                 if user_id == row[0]['friend_id']:
+                    person['reject'] = 'Reject'
                     person['operation'] = 'Accept'
                 # If user is host
                 if user_id == row[0]['host_id']:
@@ -537,7 +539,23 @@ def add():
     return redirect("/list")
 
 
-# FRIEND LIST
+# REJECT REQUEST
+@app.route("/reject", methods=["POST"])
+@login_required
+def reject():
+    user_id = session['user_id']
+    name = request.form.get("name")
+    email = request.form.get("email")
+
+    person_id = db.execute("SELECT user_id FROM informations WHERE email = ?", email)[0]['user_id']
+
+    row = db.execute("SELECT * FROM friends WHERE host_id = ? AND friend_id = ?", person_id, user_id)
+
+    db.execute("DELETE FROM friends WHERE host_id = ? AND friend_id = ?", person_id, user_id)
+    return redirect("/requests")
+
+
+# FRIEND LISTs
 @app.route("/list", methods=["GET", "POST"])
 @login_required
 @information_required
@@ -569,6 +587,7 @@ def list():
 
                 # If that person is the one who sent request
                 if user_id == row['friend_id'] and row['status'] == 'unconfirmed':
+                    person['reject'] = 'Reject'
                     person['operation'] = 'Accept'
 
                 people.append(person)
@@ -627,6 +646,7 @@ def list():
 
             # If that person is the one who sent request
             if user_id == row['friend_id'] and row['status'] == 'unconfirmed':
+                person['reject'] = 'Reject'
                 person['operation'] = 'Accept'
 
             people.append(person)
@@ -652,6 +672,7 @@ def requests():
             person['place'] = row['place']
             person['number'] = row['number']
             person['operation'] = 'Accept'
+            person['reject'] = 'Reject'
 
             people.append(person)
 
@@ -708,6 +729,7 @@ def requests():
 
         # If that person is the one who sent request
         if user_id == row['friend_id'] and row['status'] == 'unconfirmed':
+            person['reject'] = 'Reject'
             person['operation'] = 'Accept'
 
         people.append(person)
