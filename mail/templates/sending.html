@@ -8,6 +8,16 @@
 <script>
     document.addEventListener('DOMContentLoaded', function() {
 
+        if (document.querySelector('h2').innerHTML === 'Send mail')
+        {
+            document.querySelector('h2').style.color = 'green';
+        }
+        else
+        {
+            document.querySelector('h2').style.color = 'red';
+        }
+     
+
         document.querySelector('#send').onsubmit = function() {
             const receiver = document.querySelector('#receiver').value;
             const email = document.querySelector('#email').value;
@@ -42,10 +52,6 @@
     h1 {
         text-align: center;
         color: red;
-    }
-
-    h2 {
-        color: green;
     }
 
     h6 {
@@ -148,7 +154,7 @@
         <button class="btn btn-primary" type="submit">Send</button>
     </form>
 </div>
-<h1>From You to...</h1>
+<h1>Sent</h1>
 {% endblock %}
 
 

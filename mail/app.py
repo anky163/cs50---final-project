@@ -259,8 +259,8 @@ def search_sent():
     return redirect("/sending")
 
 
-# CHECK INBOX
 
+# CHECK INBOX
 @app.route("/inbox")
 @login_required
 @information_required
@@ -309,11 +309,11 @@ def search_inbox():
             date = '%' + date + '%'
 
         if not sender_email and not date:
-            rows = db.execute("SELECT * FROM mail_box WHERE receiver_id = ? AND sender LIKE ?", user_id, name)
+            rows = db.execute("SELECT * FROM mail_box WHERE receiver_id = ? AND sender LIKE ? ORDER BY date DESC", user_id, name)
         elif sender_email and not date:
-            rows = db.execute("SELECT * FROM mail_box WHERE receiver_id = ? AND sender LIKE ? AND sender_id IN (SELECT user_id FROM informations WHERE email LIKE ?)", user_id, name, sender_email)
+            rows = db.execute("SELECT * FROM mail_box WHERE receiver_id = ? AND sender LIKE ? AND sender_id IN (SELECT user_id FROM informations WHERE email LIKE ?) ORDER BY date DESC", user_id, name, sender_email)
         else:
-            rows = db.execute("SELECT * FROM mail_box WHERE receiver_id = ? AND sender LIKE ? AND sender_id IN (SELECT user_id FROM informations WHERE email LIKE ?) AND date LIKE ?", user_id, name, sender_email, date)
+            rows = db.execute("SELECT * FROM mail_box WHERE receiver_id = ? AND sender LIKE ? AND sender_id IN (SELECT user_id FROM informations WHERE email LIKE ?) AND date LIKE ? ORDER BY date DESC", user_id, name, sender_email, date)
             
         if len(rows) == 0:
             message = "Not found!"

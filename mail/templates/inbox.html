@@ -6,18 +6,21 @@
 
 {% block attribute %}
 <style>
-     h1 {
+    h1 {
         text-align: center;
-        color: green;
+        color: green
     }
 
     h6 {
         color: rgb(255, 0, 64);
     }
 
+    #search {
+        float:left;
+    }
+
     #sent {
         margin:auto;
-    
         border-top: none;
         border-bottom: none;
         width: 50%;
@@ -25,16 +28,45 @@
         box-shadow: rgba(0, 0, 0, 0.25) 0px 14px 28px, rgba(0, 0, 0, 0.22) 0px 10px 10px;
     }
 
-
-    #mail-sender {
+    #sent #sender {
         text-align: center;
+        font-size: large;
         font-weight: bold;
         color: blue;
+        height: 30px;
+        background: none;
+        border: none;
+        width: 100%;
+    }
+
+    #sent #sender-email {
+        text-align: center;
+        font-weight: bold;
+        height: 30px;
+        background: none;
+        border: none;
+        width: 100%;
+    }
+
+    #sent ul li {
+        list-style-type: none;
+    }
+
+
+    #person {
+        font-size: larger;
+        font-weight: bold;
+        height: 30px;
+    }
+
+    #person-email {
+        font-weight: bold;
+        height: 30px;
     }
 
     p {
         height: 10px;
-        font-weight: bold;
+        font-weight: normal;
     }
 
     #paragraph {
@@ -45,32 +77,18 @@
         width: 100%;
         height: 150px;
         min-height: 50px;
-        
+
         border: none;
         background: #E0EAFC;  /* fallback for old browsers */
         background: -webkit-linear-gradient(to right, #CFDEF3, #E0EAFC);  /* Chrome 10-25, Safari 5.1-6 */
         background: linear-gradient(to right, #CFDEF3, #E0EAFC); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
-
-
     }
 
-    #mail {
-        height: 120px;
-        width: 600px;
-    }
-
-    #search {
-        float: left;
-    }
-
-    #search div input {
-        width: 245px;
-    }
 </style>
 {% endblock %}
 
 {% block sending %}
-<h1>From... to You</h1>
+<h1>Inbox</h1>
 {% endblock %}
 
 {% block main %}
@@ -94,7 +112,14 @@
 <h4>{{ notfound }}</h4>
 {% for mail in mails %}
 <div id="sent">
-    <p id="mail-sender">{{ mail['sender'] }} </p> <p>{{ mail['email'] }}</p>  <p> {{ mail['date'] }}</p>
+    <form action="/send" method="post">
+        <ul>
+            <li><textarea id="sender" name="name" readonly>{{ mail['sender'] }}</textarea></li>
+            <li><textarea id="sender-email" name="email" readonly>{{ mail['email'] }}</textarea></li>
+            <li><p>{{ mail['date'] }}</p></li>
+            <li><button type="submit">Answer</button></li>          
+        </ul>
+    </form>
     <textarea id="paragraph" disabled>{{ mail['mail'] }}</textarea>
 </div>
 {% endfor %}
