@@ -6,7 +6,7 @@
 #### Description:
 This is a web-based application allows an user to find, make friends with others and then they can send email to each other
 
-The project contains:
+The mail file in the project contains:
 1. register.html and login.html
     Where the user register an account then log in.
 
